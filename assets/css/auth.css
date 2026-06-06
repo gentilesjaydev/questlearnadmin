@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #A594F9;
+    --primary-dark: #8E7CE6;
+    --text-dark: #1e1b4b;
+    --text-muted: #64748b;
+    --border-color: rgba(165, 148, 249, 0.2);
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #0f0a1c;
+}
+
+.auth-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-image: url('../images/login_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    align-items: center;
+    justify-content: center;
+    gap: 8vw;
+    padding: 0 20px;
+}
+
+/* Left Side Note Styling */
+.auth-note {
+    max-width: 500px;
+    z-index: 10;
+}
+
+.auth-note h1 {
+    font-size: 3.8rem;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -1.5px;
+    color: #1e1b4b; /* Dark purple for high contrast */
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(255, 255, 255, 0.6); /* White glow to highlight */
+}
+
+.auth-note p {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #2d264f;
+    line-height: 1.6;
+    background: rgba(255, 255, 255, 0.45); /* Glass highlight */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 20px 25px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.auth-note .badge {
+    background: #1e1b4b !important;
+    border: none !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(30, 27, 75, 0.2);
+}
+
+/* Glassmorphism Login Container */
+.login-container {
+    width: 100%;
+    max-width: 440px;
+    padding: 50px 40px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(255, 255, 255, 0.7) inset;
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.brand-header img {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(165, 148, 249, 0.3);
+}
+
+.brand-header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.login-container h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.login-container p {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 35px;
+}
+
+/* Form Styling */
+.form-floating > .form-control {
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    height: 60px;
+    padding-top: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-floating > .form-control:focus {
+    border-color: var(--primary);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(165, 148, 249, 0.15);
+}
+
+.form-floating > label {
+    padding-left: 18px;
+    padding-top: 16px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-muted);
+    z-index: 5;
+    padding: 10px;
+    transition: color 0.2s;
+}
+
+.toggle-password:hover {
+    color: var(--primary);
+}
+
+.login-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(165, 148, 249, 0.3);
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(165, 148, 249, 0.4);
+    color: white;
+}
+
+.login-btn:active {
+    transform: translateY(1px);
+}
+
+.forgot-link {
+    color: var(--primary-dark);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.forgot-link:hover {
+    color: var(--primary);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+@media (max-width: 991px) {
+    .auth-wrapper {
+        justify-content: center;
+        padding: 20px;
+        background-position: left center;
+    }
+    .login-container {
+        padding: 40px 30px;
+    }
+}

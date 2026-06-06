@@ -1,0 +1,14 @@
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# API Secrets
+secrets.php
+
+# Ignore temporary JSON exports
+json/*.json
+
+# Scratch files
+scratch/
