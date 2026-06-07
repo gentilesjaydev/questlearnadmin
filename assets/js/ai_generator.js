@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const category = document.getElementById('aiCategorySelect').value;
+            const aiMode = document.getElementById('aiModeSelect') ? document.getElementById('aiModeSelect').value : 'generate';
             const response = await fetch('../../backend/api/groq.php', {
                 method: 'POST',
                 headers: {
@@ -149,7 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     text: extractedText,
-                    category: category
+                    category: category,
+                    mode: aiMode
                 })
             });
 
@@ -340,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     mappedData.question = q.question;
                     mappedData.storyPassage = optionsString;
                     mappedData.correctAnswer = correctLetter;
-                    mappedData.storyTitle = "AI Generated from: " + file.name;
+                    mappedData.storyTitle = "New Story";
                 } else if (category === 'vocabulary') {
                     mappedData.word = q.question;
                     mappedData.question = optionsString;

@@ -18,8 +18,42 @@ if (!isset($input['text'])) {
 
 $moduleText = $input['text'];
 $category = $input['category'] ?? 'grammar'; // e.g., grammar, reading, boss_battle
+$mode = $input['mode'] ?? 'generate'; // 'generate' or 'parse'
 
-$systemPrompt = "You are an expert game designer and educator. You will read the provided educational module text and generate RPG-style quiz questions.
+if ($mode === 'parse') {
+    $systemPrompt = "You are an expert game designer and educator. The user will provide you with a text document that ALREADY CONTAINS quiz questions.
+Your task is NOT to create new questions, but to READ, EXTRACT, and CATEGORIZE the existing questions from the text into 4 RPG difficulty levels.
+You must output ONLY a valid JSON object. NO markdown formatting, NO conversational text.
+
+The JSON MUST strictly follow this exact structure:
+{
+  \"questions\": [
+    {
+      \"id\": \"extracted_id_1\",
+      \"question\": \"[Extracted Question Text]\",
+      \"options\": [\"Option A\", \"Option B\", \"Option C\", \"Option D\"],
+      \"correctOption\": 0,
+      \"type\": \"multiple_choice\",
+      \"level\": 1,
+      \"xpReward\": 10,
+      \"goldReward\": 5
+    }
+  ]
+}
+
+INSTRUCTIONS:
+1. Extract ALL the questions you can find in the provided text.
+2. Determine the appropriate difficulty Level (1 to 4) for each extracted question based on its complexity:
+   - Level 1: Basic definitions/recall.
+   - Level 2: Application.
+   - Level 3: Analysis.
+   - Level 4 (Boss): Complex problem solving.
+3. Determine the correctOption index (0-3) based on the provided text if an answer key is present, otherwise make your best educated guess.
+4. The output MUST be a JSON object containing a 'questions' array.";
+
+    $userPrompt = "Here is the document containing the questions. Read them, categorize them into levels 1-4, and format them as the requested JSON array:\n\n" . substr($moduleText, 0, 15000);
+} else {
+    $systemPrompt = "You are an expert game designer and educator. You will read the provided educational module text and generate RPG-style quiz questions.
 You must output ONLY a valid JSON object. NO markdown formatting, NO conversational text.
 
 The JSON MUST strictly follow this exact structure:
@@ -46,6 +80,9 @@ INSTRUCTIONS:
 5. Level 4 (Boss): Complex problem solving.
 6. The output MUST be a JSON object containing a 'questions' array.";
 
+    $userPrompt = "Here is the module text. Generate the questions in pure JSON format:\n\n" . substr($moduleText, 0, 15000);
+}
+
 $data = [
     "model" => "llama-3.1-8b-instant",
     "messages" => [
@@ -55,7 +92,7 @@ $data = [
         ],
         [
             "role" => "user",
-            "content" => "Here is the module text. Generate the questions in pure JSON format:\n\n" . substr($moduleText, 0, 15000)
+            "content" => $userPrompt
         ]
     ],
     "temperature" => 0.2,

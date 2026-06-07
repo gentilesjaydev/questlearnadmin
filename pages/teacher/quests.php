@@ -42,6 +42,13 @@
                             <option value="3">Level 3</option>
                             <option value="4">Level 4</option>
                         </select>
+                        <button class="btn btn-danger px-3 py-2 d-flex align-items-center gap-2 d-none" id="deleteSelectedBtn">
+                            <i class="fa-solid fa-trash-can"></i> Delete Selected (<span id="selectedCount">0</span>)
+                        </button>
+                        <div class="form-check d-flex align-items-center me-2 mb-0">
+                            <input class="form-check-input m-0 shadow-sm border-secondary" type="checkbox" id="selectAllCheckbox" style="width: 22px; height: 22px; cursor: pointer;">
+                            <label class="form-check-label ms-2 fw-bold text-muted" for="selectAllCheckbox" style="cursor: pointer; padding-top: 2px;">Select All</label>
+                        </div>
                         <button class="btn btn-outline-primary px-3 py-2 d-flex align-items-center gap-2 bg-white" data-bs-toggle="modal" data-bs-target="#aiGeneratorModal">
                             <i class="fa-solid fa-wand-magic-sparkles text-warning"></i> Generate with AI
                         </button>
@@ -78,6 +85,15 @@
                         <!-- Upload Section -->
                         <div class="col-lg-4 border-end pe-lg-4">
                             
+                            <!-- AI Mode Selection -->
+                            <div class="mb-3 text-start">
+                                <label class="form-label small fw-bold text-muted mb-1">AI Action Mode</label>
+                                <select class="form-select shadow-sm bg-white" id="aiModeSelect">
+                                    <option value="generate">Generate from Module (Create New)</option>
+                                    <option value="parse">Parse Existing Questions (Analyze & Level)</option>
+                                </select>
+                            </div>
+
                             <!-- Category Selection -->
                             <div class="mb-4 text-start">
                                 <label class="form-label small fw-bold text-muted mb-1">Target Category</label>
