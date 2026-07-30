@@ -26,7 +26,7 @@
                         <div class="card dashboard-card p-4 h-100">
                             <div class="d-flex align-items-center">
                                 <div class="icon-box icon-purple me-4"><i class="fa-solid fa-chalkboard-user"></i></div>
-                                <div><h3 class="stat-value mb-1" id="activeTeachersStat">0</h3><span class="stat-label">Active Teachers</span></div>
+                                <div><h3 class="stat-value mb-1" id="activeTeachersStat">0</h3><span class="stat-label">Active Teachers</span></div> 
                             </div>
                         </div>
                     </div>

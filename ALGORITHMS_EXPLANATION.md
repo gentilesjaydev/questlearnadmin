@@ -58,3 +58,30 @@ Traditional dashboards use "polling"—an algorithm that continuously asks the s
 *   The QuestLearn panel relies on an **Event-Driven Algorithmic Architecture**. 
 *   It establishes a persistent WebSocket connection directly to the Firebase Realtime Database.
 *   Instead of repeatedly asking for data, the UI passively listens for `on('value')` state changes. When a student answers a question in the game, the event triggers instantly, and the dashboard algorithm dynamically re-renders *only* the specific HTML components that changed. This results in zero-latency synchronization between the student's mobile game and the teacher's dashboard.
+
+---
+
+## 6. First-Attempt Official Benchmark & Retry History Persistence Algorithm
+
+To maintain diagnostic accuracy while encouraging gamified learning and student mastery, QuestLearn enforces a strict **Dual-Record Attempt Architecture**.
+
+### How the Algorithm Works:
+*   **Immutable Official Record (First Attempt):** When a student completes a quest level for the first time, the initial attempt data (`score`, `totalCorrect`, `totalWrong`, `categoryBreakdown`, `timestamp`) is saved under `users/{uid}/firstAttempts/{levelId}`. This first-attempt record is **immutable** and will never be overwritten by subsequent practice runs.
+*   **Official Diagnostic Analytics:** All administrative dashboards, roster accuracy rates, class-wide average stats, category struggle indicators, and AI Insights generate report metrics strictly using **First Attempts**. This allows educators to identify where students *initially* struggled before practicing.
+*   **Practice Retry History Persistence:** Students are free to retry levels as many times as necessary to earn rewards or unlock prerequisite nodes. Every retry is logged sequentially in the database under `users/{uid}/attempts/{attemptId}` as a learning record.
+*   **Dual View in Teacher Dashboard:** The teacher panel displays both the **Official First-Attempt Benchmark** (for diagnostic reporting) and the **Practice Retry Progress Count** (showing student effort and learning persistence).
+
+---
+
+## 7. Categorical & Game-Mode Student Segmentation Algorithm
+
+To provide teachers with clear visibility into student mastery across distinct curriculum subjects and gamified game modes, QuestLearn executes an **O(n) Categorical & Mode Segmentation Algorithm**.
+
+### How the Algorithm Works:
+*   **Dual Dimension Indexing:** The algorithm segments performance data across two distinct axes:
+    1. **Subject Topics:** Grammar, Vocabulary, Reading, Spelling, and Information Literacy.
+    2. **RPG Game Modes:** Boss Battles, Daily Challenges, Timed Mode, and Story Chapters.
+*   **Threshold-Based Performance Classification:** For each topic and mode, the algorithm dynamically sorts active students into two actionable tiers:
+    *   ⭐ **Excelling Students Tier ($\ge$75% Accuracy):** Students demonstrating domain mastery who are candidates for peer tutoring or higher-level quest unlocks.
+    *   ⚠️ **Struggling Students Tier ($<$60% Accuracy):** Students flagged for immediate targeted intervention and quest parameter adjustments.
+*   **Real-Time Class Average Calculation:** Computes the exact class-wide mean score per domain and pipes the result into interactive visualization cards and action modals.

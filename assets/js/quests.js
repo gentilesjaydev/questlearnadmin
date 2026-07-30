@@ -1,3 +1,37 @@
+window.getBloomDescription = function(level) {
+    const lvl = String(level || '').trim().toLowerCase();
+    switch (lvl) {
+        case 'remembering':
+            return 'Remembering: Recalling facts, basic concepts, or retrieving information (define, list, memorize, repeat, state).';
+        case 'understanding':
+            return 'Understanding: Explaining ideas or concepts, interpreting, or summarizing information (classify, describe, discuss, explain).';
+        case 'applying':
+            return 'Applying: Using information in new situations or executing a procedure (demonstrate, interpret, operate, schedule, sketch).';
+        case 'analyzing':
+            return 'Analyzing: Drawing connections among ideas, breaking down concepts to explore relationships (differentiate, organize, relate, compare).';
+        case 'evaluating':
+            return 'Evaluating: Justifying a stand or decision, making judgements based on criteria (appraise, argue, defend, judge, support).';
+        case 'creating':
+            return 'Creating: Producing new or original work, designing, or constructing something new (assemble, construct, design, develop, formulate).';
+        default:
+            return 'Bloom\'s Taxonomy cognitive classification.';
+    }
+};
+
+window.mapBloomToLevel = function(bloomTaxonomy) {
+    const taxonomy = String(bloomTaxonomy || '').trim().toLowerCase();
+    if (taxonomy === 'remembering' || taxonomy === 'understanding') {
+        return 1; // Easy
+    } else if (taxonomy === 'applying' || taxonomy === 'analyzing') {
+        return 2; // Medium
+    } else if (taxonomy === 'evaluating') {
+        return 3; // Hard
+    } else if (taxonomy === 'creating') {
+        return 4; // Hard (Boss / Level 4)
+    }
+    return 1; // Default
+};
+
 document.addEventListener("DOMContentLoaded", function() {
     const questsContainer = document.getElementById('questsContainer');
     const categorySelect = document.getElementById('categorySelect');
@@ -172,8 +206,14 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <input class="form-check-input quest-checkbox border-secondary shadow-sm" type="checkbox" value="${key}" style="width: 22px; height: 22px; cursor: pointer;" onchange="updateBulkDeleteState()">
                                 </div>
                                 <div class="d-flex justify-content-between align-items-start mb-3 pe-4">
-                                    <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold border border-primary border-opacity-25">
-                                        <i class="fa-solid fa-bolt me-1"></i> Level ${currentLevel}
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                                        <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold border border-primary border-opacity-25">
+                                            <i class="fa-solid fa-bolt me-1"></i> Level ${currentLevel}
+                                        </div>
+                                        ${q.bloomTaxonomy ? `
+                                        <div class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-bold border border-info border-opacity-25" title="${window.getBloomDescription(q.bloomTaxonomy)}" style="cursor: help;">
+                                            <i class="fa-solid fa-brain me-1"></i> ${q.bloomTaxonomy}
+                                        </div>` : ''}
                                     </div>
                                     <div class="text-muted fw-bold small text-truncate ms-2" style="max-width: 120px;" title="${key}">ID: ${key}</div>
                                 </div>
@@ -247,11 +287,20 @@ document.addEventListener("DOMContentLoaded", function() {
             choicesLabel = "Word to spell (word)";
         }
 
+        let defaultBloom = "Remembering";
+        if (level === 2) {
+            defaultBloom = "Applying";
+        } else if (level === 3) {
+            defaultBloom = "Evaluating";
+        } else if (level === 4) {
+            defaultBloom = "Creating";
+        }
+
         Swal.fire({
             title: `Add ${category.toUpperCase()} Question`,
             html: `
                 <div class="text-start">
-                    <div class="badge bg-primary mb-3">Level ${level}</div>
+                    <div class="badge bg-primary mb-3" id="modal-level-badge">Level ${level}</div>
                     
                     <label class="form-label text-muted small fw-bold mb-1">${promptLabel}</label>
                     <input id="q-prompt" class="swal2-input m-0 mb-3 w-100" placeholder="Enter question...">
@@ -262,6 +311,19 @@ document.addEventListener("DOMContentLoaded", function() {
                     <label class="form-label text-muted small fw-bold mb-1">${answerLabel}</label>
                     <input id="q-answer" class="swal2-input m-0 mb-3 w-100" placeholder="e.g. A, B, or exact word">
                     
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold mb-1">Bloom's Taxonomy Level</label>
+                        <select id="q-bloom" class="form-select w-100" style="padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #d1d5db; background-color: #fff; font-size: 1rem;">
+                            <option value="Remembering" ${defaultBloom === 'Remembering' ? 'selected' : ''}>Remembering</option>
+                            <option value="Understanding" ${defaultBloom === 'Understanding' ? 'selected' : ''}>Understanding</option>
+                            <option value="Applying" ${defaultBloom === 'Applying' ? 'selected' : ''}>Applying</option>
+                            <option value="Analyzing" ${defaultBloom === 'Analyzing' ? 'selected' : ''}>Analyzing</option>
+                            <option value="Evaluating" ${defaultBloom === 'Evaluating' ? 'selected' : ''}>Evaluating</option>
+                            <option value="Creating" ${defaultBloom === 'Creating' ? 'selected' : ''}>Creating</option>
+                        </select>
+                        <div class="small text-muted mt-2 p-2 bg-light rounded" id="modal-bloom-desc" style="border: 1px dashed #cbd5e1; font-size: 0.85rem; line-height: 1.4;"></div>
+                    </div>
+
                     <div class="row">
                         <div class="col-6">
                             <label class="form-label text-muted small fw-bold mb-1">HP Reward (+)</label>
@@ -277,12 +339,37 @@ document.addEventListener("DOMContentLoaded", function() {
             showCancelButton: true,
             confirmButtonColor: '#4f46e5',
             confirmButtonText: 'Save Question',
+            didOpen: () => {
+                const bloomSelect = document.getElementById('q-bloom');
+                const levelBadge = document.getElementById('modal-level-badge');
+                const bloomDesc = document.getElementById('modal-bloom-desc');
+                if (bloomSelect) {
+                    const updateBadge = () => {
+                        const mapped = window.mapBloomToLevel(bloomSelect.value);
+                        let levelName = 'Easy';
+                        if (mapped === 2) levelName = 'Medium';
+                        else if (mapped === 3) levelName = 'Hard';
+                        else if (mapped === 4) levelName = 'Hard (Boss)';
+                        if (levelBadge) {
+                            levelBadge.className = `badge mb-3 bg-${mapped === 4 ? 'danger' : (mapped === 3 ? 'warning' : (mapped === 2 ? 'primary' : 'success'))}`;
+                            levelBadge.textContent = `Level ${mapped}: ${levelName}`;
+                        }
+                        if (bloomDesc) {
+                            bloomDesc.textContent = window.getBloomDescription(bloomSelect.value);
+                        }
+                    };
+                    bloomSelect.addEventListener('change', updateBadge);
+                    updateBadge();
+                }
+            },
             preConfirm: () => {
                 const prompt = document.getElementById('q-prompt').value.trim();
                 const choices = document.getElementById('q-choices').value.trim();
                 const answer = document.getElementById('q-answer').value.trim();
                 const reward = parseInt(document.getElementById('q-reward').value) || 0;
                 const penalty = parseInt(document.getElementById('q-penalty').value) || 0;
+                const bloomTaxonomy = document.getElementById('q-bloom').value;
+                const mappedLevel = window.mapBloomToLevel(bloomTaxonomy);
                 
                 if(!prompt || !answer) {
                     Swal.showValidationMessage('Prompt and Answer are required!');
@@ -291,9 +378,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 // Construct the object dynamically based on category requirements
                 let newQuestion = {
-                    level: level,
+                    level: mappedLevel,
                     hpReward: reward,
                     hpPenalty: penalty,
+                    bloomTaxonomy: bloomTaxonomy,
                     id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 5)
                 };
                 
@@ -532,12 +620,13 @@ window.editQuestion = async function(category, key) {
 
         let currentReward = q.hpReward || (q.words && q.words[0] ? q.words[0].hpReward : 0);
         let currentPenalty = q.hpPenalty || (q.words && q.words[0] ? q.words[0].hpPenalty : (q.attacks && q.attacks[0] ? q.attacks[0].damage : 0));
+        let currentBloom = q.bloomTaxonomy || "Remembering";
 
         Swal.fire({
             title: `Edit ${category.toUpperCase()} Data`,
             html: `
                 <div class="text-start">
-                    <div class="badge bg-primary mb-3">Level ${q.level}</div>
+                    <div class="badge bg-primary mb-3" id="modal-edit-level-badge">Level ${q.level}</div>
                     
                     <label class="form-label text-muted small fw-bold mb-1">${promptLabel}</label>
                     <input id="edit-prompt" class="swal2-input m-0 mb-3 w-100" value="${currentPrompt.replace(/"/g, '&quot;')}">
@@ -548,6 +637,19 @@ window.editQuestion = async function(category, key) {
                     <label class="form-label text-muted small fw-bold mb-1">${answerLabel}</label>
                     <input id="edit-answer" class="swal2-input m-0 mb-3 w-100" value="${String(currentAnswer).replace(/"/g, '&quot;')}">
                     
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold mb-1">Bloom's Taxonomy Level</label>
+                        <select id="edit-bloom" class="form-select w-100" style="padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #d1d5db; background-color: #fff; font-size: 1rem;">
+                            <option value="Remembering" ${currentBloom === 'Remembering' ? 'selected' : ''}>Remembering</option>
+                            <option value="Understanding" ${currentBloom === 'Understanding' ? 'selected' : ''}>Understanding</option>
+                            <option value="Applying" ${currentBloom === 'Applying' ? 'selected' : ''}>Applying</option>
+                            <option value="Analyzing" ${currentBloom === 'Analyzing' ? 'selected' : ''}>Analyzing</option>
+                            <option value="Evaluating" ${currentBloom === 'Evaluating' ? 'selected' : ''}>Evaluating</option>
+                            <option value="Creating" ${currentBloom === 'Creating' ? 'selected' : ''}>Creating</option>
+                        </select>
+                        <div class="small text-muted mt-2 p-2 bg-light rounded" id="modal-edit-bloom-desc" style="border: 1px dashed #cbd5e1; font-size: 0.85rem; line-height: 1.4;"></div>
+                    </div>
+
                     <div class="row">
                         <div class="col-6">
                             <label class="form-label text-muted small fw-bold mb-1">HP Reward (+)</label>
@@ -563,12 +665,37 @@ window.editQuestion = async function(category, key) {
             showCancelButton: true,
             confirmButtonColor: '#4f46e5',
             confirmButtonText: 'Update Data',
+            didOpen: () => {
+                const bloomSelect = document.getElementById('edit-bloom');
+                const levelBadge = document.getElementById('modal-edit-level-badge');
+                const bloomDesc = document.getElementById('modal-edit-bloom-desc');
+                if (bloomSelect) {
+                    const updateBadge = () => {
+                        const mapped = window.mapBloomToLevel(bloomSelect.value);
+                        let levelName = 'Easy';
+                        if (mapped === 2) levelName = 'Medium';
+                        else if (mapped === 3) levelName = 'Hard';
+                        else if (mapped === 4) levelName = 'Hard (Boss)';
+                        if (levelBadge) {
+                            levelBadge.className = `badge mb-3 bg-${mapped === 4 ? 'danger' : (mapped === 3 ? 'warning' : (mapped === 2 ? 'primary' : 'success'))}`;
+                            levelBadge.textContent = `Level ${mapped}: ${levelName}`;
+                        }
+                        if (bloomDesc) {
+                            bloomDesc.textContent = window.getBloomDescription(bloomSelect.value);
+                        }
+                    };
+                    bloomSelect.addEventListener('change', updateBadge);
+                    updateBadge();
+                }
+            },
             preConfirm: () => {
                 const prompt = document.getElementById('edit-prompt').value.trim();
                 const choices = document.getElementById('edit-choices').value.trim();
                 const answer = document.getElementById('edit-answer').value.trim();
                 const reward = parseInt(document.getElementById('edit-reward').value) || 0;
                 const penalty = parseInt(document.getElementById('edit-penalty').value) || 0;
+                const bloomTaxonomy = document.getElementById('edit-bloom').value;
+                const mappedLevel = window.mapBloomToLevel(bloomTaxonomy);
                 
                 if(!prompt || (category !== 'puzzle' && category !== 'review' && category !== 'timed' && !answer)) {
                     Swal.showValidationMessage('Required fields cannot be empty!');
@@ -579,6 +706,8 @@ window.editQuestion = async function(category, key) {
                 let updatedObj = { ...q };
                 updatedObj.hpReward = reward;
                 updatedObj.hpPenalty = penalty;
+                updatedObj.bloomTaxonomy = bloomTaxonomy;
+                updatedObj.level = mappedLevel;
                 
                 if(category === 'grammar' || category === 'information_literacy') {
                     updatedObj.incorrectSentence = prompt;

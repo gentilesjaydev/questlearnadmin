@@ -21,12 +21,12 @@ $statsData = json_encode($input['stats']);
 $scope = $input['scope'] ?? 'class';
 
 if ($scope === 'individual') {
-    $systemPrompt = "You are an expert educational data analyst and game designer. You will analyze the provided performance statistics for a SINGLE student from an RPG gamified learning platform.
-Based on the data (HP, XP, Accuracy, Level, Correct/Wrong counts), provide actionable insights, identify if the student is struggling, and suggest specific personalized interventions or game design tweaks for this specific student.
+    $systemPrompt = "You are an expert educational data analyst and game designer. You will analyze the provided OFFICIAL FIRST-ATTEMPT performance statistics for a SINGLE student from an RPG gamified learning platform.
+Note: The official record represents the student's IMMUTABLE FIRST ATTEMPT (initial baseline performance before retries). Based on this data (HP, XP, First-Attempt Accuracy, Level, Correct/Wrong counts, Category Breakdown, Primary Struggle Category, and Practice Retry Count), provide actionable diagnostic insights, explicitly identify the subject categories (Grammar, Vocabulary, Reading, Spelling, Information Literacy) where the student initially struggled, and suggest targeted learning interventions or quest assignments.
 Output MUST be formatted as a professional HTML string snippet (using <ul>, <li>, <strong>, <p>, etc.) that can be directly injected into a dashboard. Keep it concise but insightful. Do NOT wrap it in ```html markdown block. Just pure HTML.";
 } else {
-    $systemPrompt = "You are an expert educational data analyst and game designer. You will analyze the provided student performance statistics from an RPG gamified learning platform.
-Based on the data, provide actionable insights, identify struggling students, highlight top performers, and suggest specific curriculum adjustments or game design tweaks.
+    $systemPrompt = "You are an expert educational data analyst and game designer. You will analyze the provided OFFICIAL FIRST-ATTEMPT student performance statistics from an RPG gamified learning platform.
+Note: The official statistics represent the students' IMMUTABLE FIRST ATTEMPTS (initial baseline performance before retries). Based on this data (including first-attempt category breakdowns, initial category struggles, and class-wide baseline averages), provide actionable diagnostic insights, identify struggling students, highlight top performers, evaluate initial class-wide category bottlenecks (Grammar, Vocabulary, Reading, Spelling, Information Literacy), and suggest specific curriculum adjustments or game design tweaks.
 Output MUST be formatted as a professional HTML string snippet (using <ul>, <li>, <strong>, <p>, etc.) that can be directly injected into a dashboard. Do NOT wrap it in ```html markdown block. Just pure HTML.";
 }
 

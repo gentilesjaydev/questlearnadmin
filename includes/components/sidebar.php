@@ -26,6 +26,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <li class="<?php echo ($current_page == 'quests.php') ? 'active' : ''; ?>">
             <a href="<?php echo $base; ?>pages/teacher/quests"><i class="fa-solid fa-list-ul"></i> Quest Curriculum</a>
         </li>
+        <li class="<?php echo ($current_page == 'modules.php') ? 'active' : ''; ?>">
+            <a href="<?php echo $base; ?>pages/teacher/modules"><i class="fa-solid fa-folder-open"></i> Modules Library</a>
+        </li>
         
         <hr class="mx-4 my-3" style="border-color: rgba(255,255,255,0.2); opacity: 1;">
         <li class="px-4 pt-2 pb-2 text-uppercase" style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.6); font-weight: 800; letter-spacing: 1.5px;">Administration</li>

@@ -35,6 +35,7 @@ The JSON MUST strictly follow this exact structure:
       \"correctOption\": 0,
       \"type\": \"multiple_choice\",
       \"level\": 1,
+      \"bloomTaxonomy\": \"[Remembering/Understanding/Applying/Analyzing/Evaluating/Creating]\",
       \"xpReward\": 10,
       \"goldReward\": 5
     }
@@ -43,13 +44,13 @@ The JSON MUST strictly follow this exact structure:
 
 INSTRUCTIONS:
 1. Extract ALL the questions you can find in the provided text.
-2. Determine the appropriate difficulty Level (1 to 4) for each extracted question based on its complexity:
-   - Level 1: Basic definitions/recall.
-   - Level 2: Application.
-   - Level 3: Analysis.
-   - Level 4 (Boss): Complex problem solving.
+2. Determine the appropriate difficulty Level (1 to 4) for each extracted question based on its Bloom's Taxonomy classification:
+   - Level 1 (Easy): Questions categorized under Remembering and Understanding.
+   - Level 2 (Medium): Questions requiring Applying and Analyzing.
+   - Level 3 (Hard) / Level 4 (Boss/Very Hard): Questions involving Evaluating and Creating.
 3. Determine the correctOption index (0-3) based on the provided text if an answer key is present, otherwise make your best educated guess.
-4. The output MUST be a JSON object containing a 'questions' array.";
+4. Analyze each question individually and identify its corresponding cognitive level based on Bloom's Taxonomy. Determine whether a question belongs to Remembering, Understanding, Applying, Analyzing, Evaluating, or Creating by examining the content and intent of the question.
+5. The output MUST be a JSON object containing a 'questions' array.";
 
     $userPrompt = "Here is the document containing the questions. Read them, categorize them into levels 1-4, and format them as the requested JSON array:\n\n" . substr($moduleText, 0, 15000);
 } else {
@@ -66,6 +67,7 @@ The JSON MUST strictly follow this exact structure:
       \"correctOption\": 0,
       \"type\": \"multiple_choice\",
       \"level\": 1,
+      \"bloomTaxonomy\": \"[Remembering/Understanding/Applying/Analyzing/Evaluating/Creating]\",
       \"xpReward\": 10,
       \"goldReward\": 5
     }
@@ -74,11 +76,12 @@ The JSON MUST strictly follow this exact structure:
 
 INSTRUCTIONS:
 1. Generate exactly 5 questions for Level 1, 5 for Level 2, 3 for Level 3, and 2 for Level 4 based on the text below.
-2. Level 1: Basic definitions/recall.
-3. Level 2: Application.
-4. Level 3: Analysis.
-5. Level 4 (Boss): Complex problem solving.
-6. The output MUST be a JSON object containing a 'questions' array.";
+2. Map the difficulty Level (1 to 4) of each generated question based on its Bloom's Taxonomy classification:
+   - Level 1 (Easy): Questions categorized under Remembering and Understanding.
+   - Level 2 (Medium): Questions requiring Applying and Analyzing.
+   - Level 3 (Hard) / Level 4 (Boss/Very Hard): Questions involving Evaluating and Creating.
+3. Analyze each question individually and identify its corresponding cognitive level based on Bloom's Taxonomy. Determine whether a question belongs to Remembering, Understanding, Applying, Analyzing, Evaluating, or Creating by examining the content and intent of the question.
+4. The output MUST be a JSON object containing a 'questions' array.";
 
     $userPrompt = "Here is the module text. Generate the questions in pure JSON format:\n\n" . substr($moduleText, 0, 15000);
 }

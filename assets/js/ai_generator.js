@@ -158,7 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (result.success && result.data && result.data.questions) {
-                draftQuestions = result.data.questions;
+                draftQuestions = result.data.questions.map(q => {
+                    q.level = window.mapBloomToLevel ? window.mapBloomToLevel(q.bloomTaxonomy) : q.level;
+                    return q;
+                });
                 renderDraftQuestions();
 
                 statusBadge.textContent = 'Generation Complete';
@@ -186,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         draftQuestions.forEach((q, index) => {
             const levelBadgeColor = q.level === 4 ? 'danger' : (q.level === 3 ? 'warning' : (q.level === 2 ? 'primary' : 'success'));
             const levelName = q.level === 4 ? 'Boss Battle (Very Hard)' : (q.level === 3 ? 'Hard' : (q.level === 2 ? 'Medium' : 'Easy'));
+            const bloomTaxonomy = q.bloomTaxonomy || 'Remembering';
 
             let optionsHtml = '';
             if (q.options) {
@@ -197,9 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             resultsList.innerHTML += `
                 <div class="p-3 border-bottom position-relative hover-bg-light transition-base" id="draft-q-${index}">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="badge bg-${levelBadgeColor}">Level ${q.level}: ${levelName}</span>
-                        <button class="btn btn-sm btn-outline-danger border-0 py-0 px-2" onclick="deleteDraftQuestion(${index})"><i class="fa-solid fa-trash"></i></button>
+                    <div class="d-flex justify-content-between mb-2 align-items-center">
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-${levelBadgeColor}">Level ${q.level}: ${levelName}</span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1" title="${window.getBloomDescription ? window.getBloomDescription(bloomTaxonomy) : ''}" style="cursor: help;"><i class="fa-solid fa-brain me-1 text-primary"></i> ${bloomTaxonomy}</span>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary border-0 py-0 px-2" onclick="editDraftQuestion(${index})" title="Edit Question"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn btn-sm btn-outline-danger border-0 py-0 px-2" onclick="deleteDraftQuestion(${index})" title="Delete Question"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>
                     <p class="fw-bold text-dark mb-2">${q.question}</p>
                     ${optionsHtml}
@@ -221,6 +231,76 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyState.classList.remove('d-none');
             publishAiBtn.classList.add('d-none');
             statusBadge.textContent = 'All drafts deleted';
+        }
+    };
+    
+    // Global function to edit draft questions before publishing
+    window.editDraftQuestion = async function(index) {
+        const q = draftQuestions[index];
+        const { value: formValues } = await Swal.fire({
+            title: 'Edit Question',
+            html: `
+                <div class="text-start mb-3">
+                    <label class="form-label fw-bold">Question</label>
+                    <textarea id="swal-q-text" class="form-control" rows="3">${q.question.replace(/"/g, '&quot;')}</textarea>
+                </div>
+                <div class="text-start mb-2">
+                    <label class="form-label fw-bold text-success"><i class="fa-solid fa-check"></i> Option A (Correct by default)</label>
+                    <input id="swal-opt-0" class="form-control" value="${q.options && q.options[0] ? q.options[0].replace(/"/g, '&quot;') : ''}">
+                </div>
+                <div class="text-start mb-2">
+                    <label class="form-label fw-bold text-danger">Option B</label>
+                    <input id="swal-opt-1" class="form-control" value="${q.options && q.options[1] ? q.options[1].replace(/"/g, '&quot;') : ''}">
+                </div>
+                <div class="text-start mb-2">
+                    <label class="form-label fw-bold text-danger">Option C</label>
+                    <input id="swal-opt-2" class="form-control" value="${q.options && q.options[2] ? q.options[2].replace(/"/g, '&quot;') : ''}">
+                </div>
+                <div class="text-start mb-2">
+                    <label class="form-label fw-bold text-danger">Option D</label>
+                    <input id="swal-opt-3" class="form-control" value="${q.options && q.options[3] ? q.options[3].replace(/"/g, '&quot;') : ''}">
+                </div>
+                <div class="text-start mb-2 mt-3">
+                    <label class="form-label fw-bold">Select Correct Answer</label>
+                    <select id="swal-correct" class="form-select">
+                        <option value="0" ${q.correctOption === 0 ? 'selected' : ''}>Option A</option>
+                        <option value="1" ${q.correctOption === 1 ? 'selected' : ''}>Option B</option>
+                        <option value="2" ${q.correctOption === 2 ? 'selected' : ''}>Option C</option>
+                        <option value="3" ${q.correctOption === 3 ? 'selected' : ''}>Option D</option>
+                    </select>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Save Changes',
+            width: '600px',
+            target: document.getElementById('aiGeneratorModal'),
+            preConfirm: () => {
+                const questionText = document.getElementById('swal-q-text').value;
+                const opt0 = document.getElementById('swal-opt-0').value;
+                const opt1 = document.getElementById('swal-opt-1').value;
+                const opt2 = document.getElementById('swal-opt-2').value;
+                const opt3 = document.getElementById('swal-opt-3').value;
+                const correctOpt = document.getElementById('swal-correct').value;
+                
+                if (!questionText || !opt0) {
+                    Swal.showValidationMessage('Question and at least Option A are required');
+                    return false;
+                }
+                
+                return {
+                    question: questionText,
+                    options: [opt0, opt1, opt2, opt3],
+                    correctOption: parseInt(correctOpt)
+                };
+            }
+        });
+        
+        if (formValues) {
+            draftQuestions[index].question = formValues.question;
+            draftQuestions[index].options = formValues.options;
+            draftQuestions[index].correctOption = formValues.correctOption;
+            renderDraftQuestions();
         }
     };
 
@@ -267,7 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('file', file);
                 formData.append('upload_preset', 'questlearn_modules');
 
-                const cloudinaryResponse = await fetch('https://api.cloudinary.com/v1_1/dghen22jr/auto/upload', {
+                // Using image/upload instead of raw/upload bypasses Cloudinary's strict block on PDF delivery for new/untrusted accounts
+                const cloudinaryResponse = await fetch('https://api.cloudinary.com/v1_1/dghen22jr/image/upload', {
                     method: 'POST',
                     body: formData
                 });
@@ -331,7 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     level: safeLevel,
                     hpPenalty: q.goldReward || 5, // Approximate mapping
                     hpReward: q.xpReward || 10,
-                    sourceModuleId: moduleId
+                    sourceModuleId: moduleId,
+                    bloomTaxonomy: q.bloomTaxonomy || 'Remembering'
                 };
 
                 if (category === 'grammar') {
