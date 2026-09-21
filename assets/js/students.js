@@ -7,6 +7,24 @@ let allUsersData = {};
 
 document.addEventListener("DOMContentLoaded", function() {
     const studentTableBody = document.getElementById('studentTableBody');
+    const studentSearch = document.getElementById('studentSearch');
+
+    if (studentSearch && studentTableBody) {
+        studentSearch.addEventListener('keyup', function () {
+            const searchTerm = this.value.trim().toLowerCase();
+            const rows = studentTableBody.querySelectorAll('tr');
+
+            rows.forEach((row) => {
+                const nameCell = row.querySelector('td:first-child');
+
+                // Leave loading, error, and empty-state rows visible.
+                if (!nameCell || nameCell.colSpan > 1) return;
+
+                const studentName = nameCell.textContent.toLowerCase();
+                row.style.display = studentName.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    }
     
     if(studentTableBody) {
         studentTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-5"><i class="fa-solid fa-circle-notch fa-spin fa-2x mb-3 text-primary"></i><br>Checking Authentication...</td></tr>';

@@ -22,7 +22,7 @@
                         <p class="text-muted mb-0" style="font-size: 1.05rem; font-weight: 500;"><i class="fa-solid fa-circle-dot text-success me-2"></i> Live connection to Firebase database</p>
                     </div>
                     <div class="d-flex gap-3">
-                        <input type="text" class="form-control" placeholder="Search by name or ID..." style="border-radius: 12px; width: 250px; border: 2px solid var(--card-border); background-color: var(--bg-light); color: var(--text-main); font-weight: 500;">
+                        <input id="studentSearch" type="text" class="form-control" placeholder="Search students by name..." aria-label="Search students by name" style="border-radius: 12px; width: 250px; border: 2px solid var(--card-border); background-color: var(--bg-light); color: var(--text-main); font-weight: 500;">
                         <button class="btn btn-primary px-4">
                             Search
                         </button>
