@@ -216,7 +216,7 @@ A useful conceptual response structure is:
 ```json
 {
   "category": "Vocabulary",
-  "difficulty": "Moderate",
+  "difficulty": "Moderate",x`
   "competency": "Example competency",
   "reasoning": "Brief explanation of the classification",
   "confidence": 0.85
