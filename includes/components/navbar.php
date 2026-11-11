@@ -23,16 +23,16 @@
             <div class="dropdown">
                 <a href="#" class="position-relative text-muted text-decoration-none fs-5 hover-primary transition-base" id="notifBell" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                     <i class="fa-regular fa-bell"></i>
-                    <span id="notifDot" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-white rounded-circle d-none">
-                        <span class="visually-hidden">New alerts</span>
+                    <span id="notifDot" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white d-none" style="font-size: 0.62rem; padding: 0.25em 0.45em;">
+                        0
                     </span>
                 </a>
-                <div class="dropdown-menu dropdown-menu-end border-0 shadow rounded-4 p-0" id="notifDropdown" style="width: 340px; max-height: 440px; overflow: hidden;">
+                <div class="dropdown-menu dropdown-menu-end border-0 shadow rounded-4 p-0" id="notifDropdown" style="width: 350px; max-height: 460px; overflow: hidden;">
                     <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light rounded-top-4">
-                        <span class="fw-bold text-dark fs-6"><i class="fa-regular fa-bell text-primary me-2"></i>Notifications</span>
+                        <span class="fw-bold text-dark fs-6"><i class="fa-regular fa-bell text-primary me-2"></i>Live Notifications</span>
                         <button class="btn btn-link btn-sm text-muted text-decoration-none p-0 fw-medium" id="markAllReadBtn" style="font-size:0.8rem;">Mark all read</button>
                     </div>
-                    <ul class="list-unstyled mb-0" id="notifList" style="max-height: 360px; overflow-y: auto;">
+                    <ul class="list-unstyled mb-0" id="notifList" style="max-height: 380px; overflow-y: auto;">
                         <li class="text-center text-muted py-4 px-3" id="notifEmpty">
                             <i class="fa-regular fa-bell-slash fa-2x mb-2 opacity-50 d-block"></i>
                             <span class="small">No new notifications</span>
