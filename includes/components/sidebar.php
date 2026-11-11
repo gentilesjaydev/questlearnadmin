@@ -5,7 +5,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <nav id="sidebar">
     <div class="sidebar-header">
         <h3 class="d-flex align-items-center text-white">
-            <img src="<?php echo $base; ?>assets/images/logo.png" alt="QuestLearn Logo" width="38" height="38" class="me-3 rounded-3 shadow-sm border border-light border-opacity-25"> 
+            <img src="<?php echo $base; ?>assets/images/logo.png" alt="QuestLearn Logo" width="32" height="32" class="me-2.5 rounded-3 shadow-sm border border-light border-opacity-25"> 
             QuestLearn
         </h3>
     </div>
@@ -36,8 +36,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <a href="<?php echo $base; ?>pages/teacher/modules"><i class="fa-solid fa-folder-open"></i> Modules Library</a>
         </li>
         
-        <hr class="mx-4 my-3" style="border-color: rgba(255,255,255,0.2); opacity: 1;">
-        <li class="px-4 pt-2 pb-2 text-uppercase" style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.6); font-weight: 800; letter-spacing: 1.5px;">Administration</li>
+        <hr class="mx-3 my-2" style="border-color: rgba(255,255,255,0.25); opacity: 1;">
+        <li class="px-3 pt-1 pb-1 text-uppercase" style="font-size: 0.65rem; color: rgba(255, 255, 255, 0.7); font-weight: 800; letter-spacing: 1.2px;">Administration</li>
         
         <li class="<?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>">
             <a href="<?php echo $base; ?>pages/admin/dashboard"><i class="fa-solid fa-shield-halved"></i> Super Admin Hub</a>
