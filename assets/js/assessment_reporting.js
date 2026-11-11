@@ -359,3 +359,4 @@ document.addEventListener("DOMContentLoaded", function() {
     if (domainSelect) domainSelect.addEventListener('change', renderReportTable);
     if (searchInput) searchInput.addEventListener('input', renderReportTable);
 });
+

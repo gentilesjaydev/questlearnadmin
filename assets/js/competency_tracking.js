@@ -500,3 +500,4 @@ document.addEventListener("DOMContentLoaded", function() {
     if (statusFilter) statusFilter.addEventListener('change', renderTable);
     if (searchInput) searchInput.addEventListener('input', renderTable);
 });
+
