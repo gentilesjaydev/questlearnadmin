@@ -18,13 +18,13 @@
             <div class="container-fluid p-4 p-md-5">
                 <div class="mb-5">
                     <h2 class="fw-bolder mb-1" style="color: var(--text-main); letter-spacing: -1.5px; font-size: 2.2rem;">Reference Modules Library</h2>
-                    <p class="text-muted" style="font-size: 1.05rem; font-weight: 500;">View all PDF modules uploaded to Cloudinary.</p>
+                    <p class="text-muted" style="font-size: 1.05rem; font-weight: 500;">View and manage all uploaded curriculum modules and reference documents.</p>
                 </div>
 
                 <div class="mb-4 d-flex justify-content-between align-items-end flex-wrap gap-3">
                     <div>
                         <h5 class="fw-bold mb-0" style="color: var(--text-main); font-size: 1.25rem;"><i class="fa-solid fa-book-open text-primary me-2"></i> Uploaded Modules</h5>
-                        <p class="text-muted small mt-1 mb-0">Browse your Cloudinary modules visually.</p>
+                        <p class="text-muted small mt-1 mb-0">Browse and inspect your curriculum modules.</p>
                     </div>
                     
                     <div class="d-flex align-items-center gap-3 bg-light px-3 py-2 rounded-3 border">
@@ -35,6 +35,9 @@
                             </label>
                         </div>
                         <div class="vr"></div>
+                        <button id="downloadSelectedBtn" class="btn btn-sm btn-outline-primary px-3 shadow-sm" disabled>
+                            <i class="fa-solid fa-cloud-arrow-down me-1"></i> Download Selected (<span id="downloadSelectedCount">0</span>)
+                        </button>
                         <button id="deleteSelectedBtn" class="btn btn-sm btn-danger px-3 shadow-sm" disabled>
                             <i class="fa-solid fa-trash-can me-1"></i> Delete Selected (<span id="selectedCount">0</span>)
                         </button>
@@ -54,9 +57,14 @@
     <div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-labelledby="pdfViewerModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content" style="height: 85vh;">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title fw-bold" id="pdfViewerModalLabel"><i class="fa-solid fa-file-pdf text-danger me-2"></i> Document Viewer</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold mb-0" id="pdfViewerModalLabel"><i class="fa-solid fa-file-pdf text-danger me-2"></i> Document Viewer</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="modalDownloadBtn" onclick="downloadModuleFile(window.currentViewingUrl, window.currentViewingTitle, event)" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-cloud-arrow-down me-1"></i> Download
+                        </button>
+                        <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
                 <div class="modal-body p-0" id="pdfModalBody" style="min-height: 80vh;">
                     <!-- PDF Object will be dynamically injected here to prevent browser rendering bugs -->

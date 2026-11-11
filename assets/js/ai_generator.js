@@ -343,33 +343,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = fileInput.files[0];
 
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', 'questlearn_modules');
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', 'questlearn_modules');
 
-                // Using image/upload instead of raw/upload bypasses Cloudinary's strict block on PDF delivery for new/untrusted accounts
-                const cloudinaryResponse = await fetch('https://api.cloudinary.com/v1_1/dghen22jr/image/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (cloudinaryResponse.ok) {
-                    const cloudinaryData = await cloudinaryResponse.json();
-                    secureUrl = cloudinaryData.secure_url;
-
-                    // First, create the new 'modules' entry inside 'quests'
-                    const moduleRef = await db.ref('quests/modules').push({
-                        title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-                        fileUrl: secureUrl,
-                        category: category,
-                        uploadedAt: firebase.database.ServerValue.TIMESTAMP
+                    // PDF files use image endpoint for thumbnail generation; DOCX/other use raw endpoint
+                    const uploadType = file.type === 'application/pdf' ? 'image' : 'raw';
+                    const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/dghen22jr/${uploadType}/upload`, {
+                        method: 'POST',
+                        body: formData
                     });
-                    moduleId = moduleRef.key;
-                } else {
-                    console.warn("Cloudinary upload failed, but continuing to save questions.");
+
+                    if (cloudinaryResponse.ok) {
+                        const cloudinaryData = await cloudinaryResponse.json();
+                        secureUrl = cloudinaryData.secure_url;
+                    } else {
+                        console.warn("Cloudinary direct upload returned an error, saving module directly to database.");
+                    }
                 }
             } catch (cloudErr) {
                 console.warn("Cloudinary error: ", cloudErr);
+            }
+
+            // Always record the module in Firebase Realtime Database
+            try {
+                const moduleTitle = file ? file.name.replace(/\.[^/.]+$/, "") : `Module_${category}_${Date.now()}`;
+                const moduleRef = await db.ref('quests/modules').push({
+                    title: moduleTitle,
+                    fileUrl: secureUrl || '',
+                    category: category,
+                    uploadedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                moduleId = moduleRef.key;
+            } catch (fbModErr) {
+                console.warn("Could not save module to Firebase:", fbModErr);
             }
 
             Swal.fire({

@@ -12,3 +12,6 @@ json/*.json
 
 # Scratch files
 scratch/
+
+# Archives
+*.zip

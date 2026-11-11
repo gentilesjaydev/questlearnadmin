@@ -8,6 +8,11 @@ header("Access-Control-Allow-Headers: Content-Type");
 require_once __DIR__ . '/../../secrets.php';
 $GROQ_API_KEY = GROQ_API_KEY_MAIN;
 
+if (!function_exists('curl_init')) {
+    echo json_encode(['error' => 'PHP cURL extension is not enabled in your web server. Please enable extension=curl in php.ini.']);
+    exit;
+}
+
 // Get POST data
 $input = json_decode(file_get_contents('php://input'), true);
 
@@ -87,7 +92,7 @@ INSTRUCTIONS:
 }
 
 $data = [
-    "model" => "llama-3.1-8b-instant",
+    "model" => "openai/gpt-oss-20b",
     "messages" => [
         [
             "role" => "system",
@@ -99,7 +104,9 @@ $data = [
         ]
     ],
     "temperature" => 0.2,
-    "response_format" => ["type" => "json_object"]
+    "reasoning_effort" => "low",
+    "reasoning_format" => "hidden",
+    "max_completion_tokens" => 8192
 ];
 
 
@@ -107,6 +114,7 @@ $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Authorization: Bearer ' . $GROQ_API_KEY,
     'Content-Type: application/json'
@@ -122,18 +130,28 @@ if (curl_errno($ch)) {
 } else {
     if ($httpCode !== 200) {
         $errData = json_decode($response, true);
-        if ($httpCode === 429) {
+        $groqMsg = $errData['error']['message'] ?? 'Unknown error';
+        if ($httpCode === 401) {
+            echo json_encode(['error' => 'Invalid or expired Groq API Key (' . $groqMsg . '). Please provide a valid Groq API key in secrets.php.', 'details' => $errData]);
+        } else if ($httpCode === 429) {
             echo json_encode(['error' => 'Rate Limit Exceeded. Please wait 1 minute before generating again.', 'details' => $errData]);
         } else {
-            echo json_encode(['error' => 'API Error', 'details' => $errData]);
+            echo json_encode(['error' => 'Groq API Error (HTTP ' . $httpCode . '): ' . $groqMsg, 'details' => $errData]);
         }
     } else {
         $result = json_decode($response, true);
-        $content = $result['choices'][0]['message']['content'];
+        $content = $result['choices'][0]['message']['content'] ?? '';
         
-        // Ensure we parse the string content as JSON
-        $jsonOutput = json_decode($content, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
+        // Strip markdown code fences if present (e.g., ```json ... ```)
+        $cleanContent = trim($content);
+        if (preg_match('/```(?:json)?\s*([\s\S]*?)\s*```/i', $cleanContent, $matches)) {
+            $cleanContent = trim($matches[1]);
+        } elseif (preg_match('/\{[\s\S]*\}/', $cleanContent, $matches)) {
+            $cleanContent = trim($matches[0]);
+        }
+        
+        $jsonOutput = json_decode($cleanContent, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($jsonOutput)) {
             echo json_encode(['success' => true, 'data' => $jsonOutput]);
         } else {
             echo json_encode(['error' => 'Failed to parse AI output as JSON', 'raw' => $content]);

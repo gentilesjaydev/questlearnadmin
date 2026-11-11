@@ -26,15 +26,7 @@
                             <option value="grammar">Grammar</option>
                             <option value="vocabulary">Vocabulary</option>
                             <option value="reading">Reading Comprehension</option>
-                            <option value="spelling">Spelling</option>
                             <option value="information_literacy">Information Literacy</option>
-                            <option value="boss_battle">Boss Battle</option>
-                            <option value="challenge">Challenge</option>
-                            <option value="daily">Daily Quests</option>
-                            <option value="puzzle">Puzzle</option>
-                            <option value="review">Review</option>
-                            <option value="story">Story</option>
-                            <option value="timed">Timed Stages</option>
                         </select>
                         <select class="form-select shadow-sm" id="levelSelect" style="width: 150px;">
                             <option value="1">Level 1</option>
@@ -102,15 +94,7 @@
                                     <option value="grammar">Grammar</option>
                                     <option value="vocabulary">Vocabulary</option>
                                     <option value="reading">Reading Comprehension</option>
-                                    <option value="spelling">Spelling</option>
                                     <option value="information_literacy">Information Literacy</option>
-                                    <option value="boss_battle">Boss Battle</option>
-                                    <option value="challenge">Challenge</option>
-                                    <option value="daily">Daily Quests</option>
-                                    <option value="puzzle">Puzzle</option>
-                                    <option value="review">Review</option>
-                                    <option value="story">Story</option>
-                                    <option value="timed">Timed Stages</option>
                                 </select>
                             </div>
 

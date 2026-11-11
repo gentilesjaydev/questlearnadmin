@@ -1,6 +1,11 @@
 <?php
 header('Content-Type: application/json');
-require_once '../../secrets.php';
+require_once __DIR__ . '/../../secrets.php';
+
+if (!function_exists('curl_init')) {
+    echo json_encode(['error' => 'PHP cURL extension is not enabled in your web server. Please enable extension=curl in php.ini.']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -43,6 +48,7 @@ curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_USERPWD, $apiKey . ':' . $apiSecret);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
 $result = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

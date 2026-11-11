@@ -130,32 +130,25 @@
                     </div>
                 </div>
 
-                <!-- Secondary Data Row -->
+                <!-- Secondary Data Row: Live Student Activity Feed -->
                 <div class="row g-4">
-                    <!-- Engagement Chart -->
-                    <div class="col-lg-8">
-                        <div class="card dashboard-card h-100 p-4">
-                            <div class="mb-4">
-                                <h5 class="mb-1">Game Mode Engagement</h5>
-                                <p class="text-muted small mb-0">Which categories students interact with most</p>
+                    <div class="col-12">
+                        <div class="card dashboard-card p-0">
+                            <div class="p-4 border-bottom border-light bg-light rounded-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1"><i class="fa-solid fa-bolt text-warning me-2"></i> Live Student Activity</h5>
+                                    <p class="text-muted small mb-0">Real-time learner health status & XP progression</p>
+                                </div>
+                                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill">
+                                    <i class="fa-solid fa-circle-dot me-1"></i> Live Stream
+                                </span>
                             </div>
-                            <div class="p-2" style="position: relative; height: 300px; width: 100%;">
-                                <canvas id="engagementChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Live Feed -->
-                    <div class="col-lg-4">
-                        <div class="card dashboard-card h-100 p-0">
-                            <div class="p-4 border-bottom border-light bg-light rounded-top">
-                                <h5 class="mb-1">Live Database Activity</h5>
-                                <p class="text-muted small mb-0">Real-time Firebase operations</p>
-                            </div>
-                            <div class="p-4 d-flex flex-column gap-3 overflow-auto" id="recentActivityFeed" style="height: 300px;">
-                                <div class="text-center text-muted py-5 my-auto">
-                                    <i class="fa-solid fa-circle-notch fa-spin fa-2x mb-3 text-primary"></i>
-                                    <p class="small fw-medium">Syncing data streams...</p>
+                            <div class="p-4 overflow-auto">
+                                <div class="row g-3" id="recentActivityFeed">
+                                    <div class="col-12 text-center text-muted py-5 my-auto">
+                                        <i class="fa-solid fa-circle-notch fa-spin fa-2x mb-3 text-primary"></i>
+                                        <p class="small fw-medium">Syncing data streams...</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -184,24 +177,64 @@
     <script src="assets/js/dashboard.js?v=<?php echo time(); ?>"></script>
     
     <script>
-        // SweetAlert function for the Report button
+        // Official NATG6 Report Exporter & Downloader
         function generateReport() {
             Swal.fire({
-                title: 'Generating Report...',
-                text: 'Compiling latest analytics data into PDF format.',
-                icon: 'info',
-                timer: 2000,
-                timerProgressBar: true,
-                showConfirmButton: false,
-                didClose: () => {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Report successfully downloaded!'
-                    });
+                title: 'Official NATG6 Assessment Reports',
+                text: 'Select an export option to generate official performance records for this cohort.',
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#A594F9',
+                denyButtonColor: '#10b981',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fa-solid fa-file-invoice me-1"></i> Full Diagnostic Report (Print/PDF)',
+                denyButtonText: '<i class="fa-solid fa-file-excel me-1"></i> Quick CSV Export',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'pages/teacher/performance?action=openReport';
+                } else if (result.isDenied) {
+                    downloadDashboardCsv();
                 }
             });
         }
 
+        function downloadDashboardCsv() {
+            const list = window.dashboardStudentList || [];
+            if (!list || list.length === 0) {
+                Swal.fire('No Data', 'No student records available to export yet.', 'info');
+                return;
+            }
+
+            let csv = '\uFEFF'; // UTF-8 BOM
+            csv += 'QUESTLEARN - STUDENT TELEMETRY & GAMIFICATION SUMMARY\r\n';
+            csv += `Generated Date: "${new Date().toLocaleString()}"\r\n`;
+            csv += `Total Enrolled: ${list.length}\r\n\r\n`;
+            csv += 'Student Name,RPG Level,Total XP,Health Points (HP),Status\r\n';
+
+            list.forEach(s => {
+                const cleanName = (s.name || 'Student').replace(/"/g, '""');
+                const status = (s.hp <= 20) ? 'At-Risk (Low HP)' : 'Active';
+                csv += `"${cleanName}",${s.level || 1},${s.xp || 0},${s.hp || 100},"${status}"\r\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `QuestLearn_Dashboard_Summary_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Summary CSV downloaded successfully!'
+                });
+            }
+        }
     </script>
 </body>
 </html>

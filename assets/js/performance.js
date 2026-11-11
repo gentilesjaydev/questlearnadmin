@@ -20,9 +20,196 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentViewedStudent = null;
 
     let globalStats = []; // Store simplified stats for AI
+    let dataLoaded = false; // Flag: true once Firebase has resolved at least once
+
+    // Pure Read-Time Helper: Extract true First-Attempt baseline without altering Firebase database
+    function extractStudentFirstAttemptStats(student) {
+        if (!student) return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, retryCount: 0, categories: {} };
+
+        // 1. If explicit firstAttemptStats exists, use directly
+        if (student.firstAttemptStats && (student.firstAttemptStats.totalAnswers > 0 || student.firstAttemptStats.totalCorrect > 0)) {
+            return {
+                totalAnswers: Number(student.firstAttemptStats.totalAnswers) || 0,
+                totalCorrect: Number(student.firstAttemptStats.totalCorrect) || 0,
+                totalWrong: Number(student.firstAttemptStats.totalWrong) || 0,
+                retryCount: Number(student.retryCount) || 0,
+                categories: student.firstAttemptStats.categories || {}
+            };
+        }
+
+        function normalizeCat(cat) {
+            const c = String(cat || '').toLowerCase().replace(/[\s_-]+/g, '');
+            if (c.includes('gram')) return 'grammar';
+            if (c.includes('vocab')) return 'vocabulary';
+            if (c.includes('read') || c.includes('comprehen')) return 'reading';
+            if (c.includes('spell')) return 'spelling';
+            return 'information_literacy';
+        }
+
+        let categories = {
+            grammar: { correct: 0, wrong: 0, total: 0 },
+            vocabulary: { correct: 0, wrong: 0, total: 0 },
+            reading: { correct: 0, wrong: 0, total: 0 },
+            spelling: { correct: 0, wrong: 0, total: 0 },
+            information_literacy: { correct: 0, wrong: 0, total: 0 }
+        };
+
+        let totalCorrect = 0;
+        let totalWrong = 0;
+        let retryCount = 0;
+
+        // 2. Derive strictly from gameHistory level_complete events with firstClear === true
+        if (student.gameHistory && typeof student.gameHistory === 'object') {
+            const levelClears = {};
+            let replayRuns = 0;
+
+            const entries = Object.values(student.gameHistory)
+                .filter(e => e && typeof e === 'object')
+                .sort((a, b) => (Number(a.at || a.timestamp) || 0) - (Number(b.at || b.timestamp) || 0));
+
+            entries.forEach(e => {
+                if (e.type === 'level_complete') {
+                    const cat = normalizeCat(e.category || e.questKind);
+                    const lvl = e.questLevel || e.level || 1;
+                    const levelKey = `${cat}_L${lvl}`;
+
+                    if (e.firstClear === true || !levelClears[levelKey]) {
+                        if (!levelClears[levelKey]) {
+                            levelClears[levelKey] = {
+                                correct: Number(e.correct) || 0,
+                                wrong: Number(e.wrong) || 0
+                            };
+                        }
+                    } else {
+                        replayRuns++;
+                    }
+                }
+            });
+
+            const clearedKeys = Object.keys(levelClears);
+            if (clearedKeys.length > 0) {
+                clearedKeys.forEach(k => {
+                    const item = levelClears[k];
+                    const cat = k.split('_L')[0];
+                    const c = item.correct;
+                    const w = item.wrong;
+                    totalCorrect += c;
+                    totalWrong += w;
+                    if (categories[cat]) {
+                        categories[cat].correct += c;
+                        categories[cat].wrong += w;
+                        categories[cat].total += (c + w);
+                    }
+                });
+
+                if (student.gameLevels && typeof student.gameLevels === 'object') {
+                    Object.values(student.gameLevels).forEach(gl => {
+                        const plays = Number(gl.plays) || 0;
+                        if (plays > 1) retryCount += (plays - 1);
+                    });
+                } else {
+                    retryCount = replayRuns;
+                }
+
+                return {
+                    totalAnswers: totalCorrect + totalWrong,
+                    totalCorrect: totalCorrect,
+                    totalWrong: totalWrong,
+                    retryCount: retryCount,
+                    categories: categories
+                };
+            }
+
+            // In-progress questions answered before level completion
+            const seenQuestionLevel = {};
+            entries.forEach(e => {
+                if (e.correct !== undefined && e.type !== 'level_complete') {
+                    const cat = normalizeCat(e.category || e.questKind);
+                    const lvl = e.level || 1;
+                    const key = `${cat}_L${lvl}`;
+                    if (!seenQuestionLevel[key]) seenQuestionLevel[key] = { correct: 0, wrong: 0 };
+                    if (e.correct === true) seenQuestionLevel[key].correct++;
+                    else if (e.correct === false) seenQuestionLevel[key].wrong++;
+                }
+            });
+
+            Object.keys(seenQuestionLevel).forEach(k => {
+                const cat = k.split('_L')[0];
+                const c = seenQuestionLevel[k].correct;
+                const w = seenQuestionLevel[k].wrong;
+                totalCorrect += c;
+                totalWrong += w;
+                if (categories[cat]) {
+                    categories[cat].correct += c;
+                    categories[cat].wrong += w;
+                    categories[cat].total += (c + w);
+                }
+            });
+
+            if (totalCorrect + totalWrong > 0) {
+                return {
+                    totalAnswers: totalCorrect + totalWrong,
+                    totalCorrect: totalCorrect,
+                    totalWrong: totalWrong,
+                    retryCount: retryCount,
+                    categories: categories
+                };
+            }
+        }
+
+        // 3. Fallback: gameLevels or gameStats
+        if (student.gameLevels && typeof student.gameLevels === 'object') {
+            Object.values(student.gameLevels).forEach(gl => {
+                const c = Number(gl.correct) || 0;
+                const w = Number(gl.wrong) || 0;
+                const plays = Number(gl.plays) || 1;
+                const estC = plays > 0 ? Math.round(c / plays) : c;
+                const estW = plays > 0 ? Math.round(w / plays) : w;
+                totalCorrect += estC;
+                totalWrong += estW;
+                if (plays > 1) retryCount += (plays - 1);
+
+                const cat = normalizeCat(gl.category || gl.questKind);
+                if (categories[cat]) {
+                    categories[cat].correct += estC;
+                    categories[cat].wrong += estW;
+                    categories[cat].total += (estC + estW);
+                }
+            });
+
+            if (totalCorrect + totalWrong > 0) {
+                return {
+                    totalAnswers: totalCorrect + totalWrong,
+                    totalCorrect: totalCorrect,
+                    totalWrong: totalWrong,
+                    retryCount: retryCount,
+                    categories: categories
+                };
+            }
+        }
+
+        // 4. Ultimate fallback: gameStats
+        if (student.gameStats) {
+            return {
+                totalAnswers: Number(student.gameStats.totalAnswers) || 0,
+                totalCorrect: Number(student.gameStats.totalCorrect) || 0,
+                totalWrong: Number(student.gameStats.totalWrong) || 0,
+                retryCount: Number(student.retryCount) || 0,
+                categories: categories
+            };
+        }
+
+        return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, retryCount: 0, categories: categories };
+    }
 
     if(studentTableBody) {
         studentTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5"><i class="fa-solid fa-circle-notch fa-spin fa-2x mb-3 text-primary"></i><br>Checking Authentication...</td></tr>';
+
+        // Dim AI button while data loads
+        if (aiInsightsBtn) {
+            aiInsightsBtn.disabled = true;
+            aiInsightsBtn.title = 'Loading student data...';
+        }
 
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
@@ -56,33 +243,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                 const level = student.level || student.accountLevel || 1;
                                 const hp = student.hp !== undefined ? student.hp : 100;
                                 
-                                let sTotal = 0;
-                                let sCorrect = 0;
-                                let sWrong = 0;
-                                let retryCount = 0;
-
-                                if (student.firstAttemptStats) {
-                                    sTotal = student.firstAttemptStats.totalAnswers || 0;
-                                    sCorrect = student.firstAttemptStats.totalCorrect || 0;
-                                    sWrong = student.firstAttemptStats.totalWrong || 0;
-                                } else if (student.firstAttempts) {
-                                    Object.values(student.firstAttempts).forEach(att => {
-                                        sTotal += (att.totalQuestions || ((att.totalCorrect || 0) + (att.totalWrong || 0)) || 0);
-                                        sCorrect += (att.totalCorrect || 0);
-                                        sWrong += (att.totalWrong || 0);
-                                    });
-                                } else if (student.gameStats) {
-                                    sTotal = student.gameStats.totalAnswers || 0;
-                                    sCorrect = student.gameStats.totalCorrect || 0;
-                                    sWrong = student.gameStats.totalWrong || 0;
-                                }
-
-                                if (student.attempts) {
-                                    const attemptsArr = Array.isArray(student.attempts) ? student.attempts : Object.values(student.attempts);
-                                    retryCount = Math.max(0, attemptsArr.length - 1);
-                                } else if (student.retryCount !== undefined) {
-                                    retryCount = student.retryCount;
-                                }
+                                const faStats = extractStudentFirstAttemptStats(student);
+                                const sTotal = faStats.totalAnswers;
+                                const sCorrect = faStats.totalCorrect;
+                                const sWrong = faStats.totalWrong;
+                                const retryCount = faStats.retryCount;
 
                                 totalQuestionsAnswered += sTotal;
                                 totalCorrect += sCorrect;
@@ -90,8 +255,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
                                 const accuracy = sTotal > 0 ? Math.round((sCorrect / sTotal) * 100) : 0;
                                 
-                                // Compute Category Struggles for student based on First Attempts
-                                const tempStudentObj = { uid: key, firstAttemptStats: student.firstAttemptStats, firstAttempts: student.firstAttempts, gameStats: student.gameStats, correctAnswers: sCorrect, totalAnswered: sTotal };
+                                // Compute Category Struggles for student based strictly on First Attempts
+                                const tempStudentObj = {
+                                    uid: key,
+                                    firstAttemptStats: student.firstAttemptStats,
+                                    firstAttempts: student.firstAttempts,
+                                    firstAttemptCategories: faStats.categories,
+                                    gameStats: student.gameStats,
+                                    correctAnswers: sCorrect,
+                                    totalAnswered: sTotal
+                                };
                                 const catStruggles = getStudentCategoryStruggles(tempStudentObj);
 
                                 // Push to global for AI
@@ -108,6 +281,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     retryCount: retryCount,
                                     firstAttemptStats: student.firstAttemptStats,
                                     firstAttempts: student.firstAttempts,
+                                    firstAttemptCategories: faStats.categories,
                                     categoryBreakdown: catStruggles.breakdown,
                                     primaryStruggleCategory: catStruggles.lowest ? `${catStruggles.lowest.label} (${catStruggles.lowest.score}%)` : 'None',
                                     strugglingCategories: catStruggles.struggling.map(s => `${s.label} (${s.score}%)`)
@@ -161,7 +335,10 @@ document.addEventListener("DOMContentLoaded", function() {
                                                 <div class="progress-bar ${accuracy >= 70 ? 'bg-success' : (accuracy >= 40 ? 'bg-warning' : 'bg-danger')}" style="width: ${accuracy}%"></div>
                                             </div>
                                         </div>
-                                        <small class="text-muted" style="font-size:0.75rem;">1st Attempt: ${sCorrect} correct / ${sWrong} wrong${retryCount > 0 ? ` (${retryCount} retries)` : ''}</small>
+                                        <div class="mt-1">
+                                            <small class="d-block text-muted" style="font-size:0.75rem;"><span class="text-primary fw-semibold"><i class="fa-solid fa-bookmark me-1"></i>1st Attempt (Baseline):</span> ${sCorrect} correct / ${sWrong} wrong</small>
+                                            ${retryCount > 0 ? `<small class="d-block text-secondary mt-0.5" style="font-size:0.72rem;"><i class="fa-solid fa-rotate-right me-1"></i>${retryCount} practice retries <span class="badge bg-secondary bg-opacity-10 text-secondary border px-1.5 py-0.5 rounded" style="font-size:0.65rem;">Excluded from Score</span></small>` : ''}
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3">${struggleBadgeHtml}</td>
                                     <td class="px-4 py-3 text-end">
@@ -208,6 +385,52 @@ document.addEventListener("DOMContentLoaded", function() {
                     } else {
                         lowestCatLabel = "No Quiz Data";
                         lowestCatScore = 0;
+                    }
+
+                    // Store for Report Generator
+                    window.currentGlobalStats = globalStats;
+                    window.currentClassCategories = tempClassCategories;
+                    dataLoaded = true; // Firebase data is ready
+                    // Re-enable AI button now that data is ready
+                    if (aiInsightsBtn) {
+                        aiInsightsBtn.disabled = false;
+                        aiInsightsBtn.title = '';
+                    }
+
+                    // Calculate DepEd 4-Tier Proficiency Distribution (Standards-Based)
+                    let tierMastered = 0;
+                    let tierProficient = 0;
+                    let tierDeveloping = 0;
+                    let tierNeedsSupport = 0;
+
+                    globalStats.forEach(s => {
+                        const acc = parseInt(s.accuracy) || 0;
+                        if (acc >= 75) {
+                            tierMastered++;
+                        } else if (acc >= 60) {
+                            tierProficient++;
+                        } else if (acc >= 50) {
+                            tierDeveloping++;
+                        } else {
+                            tierNeedsSupport++;
+                        }
+                    });
+
+                    const totalCohort = globalStats.length;
+                    const mPct = totalCohort > 0 ? Math.round((tierMastered / totalCohort) * 100) : 0;
+                    const pPct = totalCohort > 0 ? Math.round((tierProficient / totalCohort) * 100) : 0;
+                    const dPct = totalCohort > 0 ? Math.round((tierDeveloping / totalCohort) * 100) : 0;
+                    const nPct = totalCohort > 0 ? Math.round((tierNeedsSupport / totalCohort) * 100) : 0;
+
+                    if (document.getElementById('tierMasteredCount')) {
+                        document.getElementById('tierMasteredCount').innerText = tierMastered;
+                        document.getElementById('tierMasteredPct').innerText = `${mPct}% of cohort`;
+                        document.getElementById('tierProficientCount').innerText = tierProficient;
+                        document.getElementById('tierProficientPct').innerText = `${pPct}% of cohort`;
+                        document.getElementById('tierDevelopingCount').innerText = tierDeveloping;
+                        document.getElementById('tierDevelopingPct').innerText = `${dPct}% of cohort`;
+                        document.getElementById('tierNeedsSupportCount').innerText = tierNeedsSupport;
+                        document.getElementById('tierNeedsSupportPct').innerText = `${nPct}% of cohort`;
                     }
 
                     generalStatsBox.innerHTML = `
@@ -462,6 +685,15 @@ document.addEventListener("DOMContentLoaded", function() {
                         window.renderMasteryMatrix();
                     }
 
+                    // Auto-open Report Modal if directed from other pages
+                    if (window.location.search.includes('action=openReport')) {
+                        setTimeout(() => {
+                            if (typeof window.openOfficialReportModal === 'function') {
+                                window.openOfficialReportModal();
+                            }
+                        }, 400);
+                    }
+
                 });
             } else {
                 studentTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-5">Authentication Required</td></tr>`;
@@ -472,6 +704,17 @@ document.addEventListener("DOMContentLoaded", function() {
     // Overall Class AI Insights
     if (aiInsightsBtn) {
         aiInsightsBtn.addEventListener('click', async () => {
+            if (!dataLoaded) {
+                Swal.fire({
+                    title: 'Still Loading...',
+                    text: 'Student data is still being fetched from the database. Please wait a moment and try again.',
+                    icon: 'info',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+                return;
+            }
             if (globalStats.length === 0) {
                 Swal.fire('No Data', 'There is no student data to analyze yet.', 'info');
                 return;
@@ -483,7 +726,64 @@ document.addEventListener("DOMContentLoaded", function() {
             aiInsightsResult.classList.remove('d-none');
 
             try {
-                const payload = { stats: globalStats, scope: "class" };
+                // Build a clean, structured payload for the AI without raw question dumps
+                const cleanStudentList = globalStats.map(s => ({
+                    name: s.name,
+                    accuracy: s.accuracy,
+                    level: s.level,
+                    hp: s.hp,
+                    xp: s.xp,
+                    totalAnswered: s.totalAnswered,
+                    correctAnswers: s.correctAnswers,
+                    wrongAnswers: s.wrongAnswers,
+                    retries: s.retryCount,
+                    lowestDomain: s.primaryStruggleCategory,
+                    struggles: s.strugglingCategories
+                }));
+
+                const catMap = window.currentClassCategories || { grammar: 0, vocabulary: 0, reading: 0, spelling: 0, information_literacy: 0 };
+                
+                // Calculate DepEd 4 tiers
+                let tMastered = globalStats.filter(s => (parseInt(s.accuracy) || 0) >= 75).length;
+                let tProficient = globalStats.filter(s => (parseInt(s.accuracy) || 0) >= 60 && (parseInt(s.accuracy) || 0) < 75).length;
+                let tDeveloping = globalStats.filter(s => (parseInt(s.accuracy) || 0) >= 50 && (parseInt(s.accuracy) || 0) < 60).length;
+                let tNeedsSupport = globalStats.filter(s => (parseInt(s.accuracy) || 0) < 50).length;
+                let totalStudents = globalStats.length;
+                
+                let passingCount = globalStats.filter(s => (parseInt(s.accuracy) || 0) >= 60).length;
+                let passingRate = totalStudents > 0 ? Math.round((passingCount / totalStudents) * 100) : 0;
+                
+                let totalAns = globalStats.reduce((sum, s) => sum + (s.totalAnswered || 0), 0);
+                let totalCorr = globalStats.reduce((sum, s) => sum + (s.correctAnswers || 0), 0);
+                let meanAccuracy = totalAns > 0 ? Math.round((totalCorr / totalAns) * 100) : 0;
+
+                const structuredCohortStats = {
+                    cohortSummary: {
+                        totalStudents: totalStudents,
+                        totalQuestionsAnswered: totalAns,
+                        cohortMeanAccuracy: meanAccuracy + '%',
+                        depEdMplPassingRate: passingRate + '% (DepEd Benchmark: 60.0%)',
+                        studentsMeetingMpl: passingCount,
+                        studentsBelowMpl: totalStudents - passingCount,
+                        criticalHealthStudents: globalStats.filter(s => s.hp <= 20).length
+                    },
+                    depEdProficiencyDistribution: {
+                        mastered_75_plus: { count: tMastered, percentage: (totalStudents > 0 ? Math.round((tMastered / totalStudents) * 100) : 0) + '%' },
+                        proficient_60_to_74: { count: tProficient, percentage: (totalStudents > 0 ? Math.round((tProficient / totalStudents) * 100) : 0) + '%' },
+                        developing_50_to_59: { count: tDeveloping, percentage: (totalStudents > 0 ? Math.round((tDeveloping / totalStudents) * 100) : 0) + '%' },
+                        needsSupport_below_50: { count: tNeedsSupport, percentage: (totalStudents > 0 ? Math.round((tNeedsSupport / totalStudents) * 100) : 0) + '%' }
+                    },
+                    natg6EnglishDomains: {
+                        grammarAndMechanics: (catMap.grammar || 0) + '%',
+                        vocabularyDevelopment: (catMap.vocabulary || 0) + '%',
+                        readingComprehension: (catMap.reading || 0) + '%',
+                        spellingAndPhonics: (catMap.spelling || 0) + '%',
+                        informationLiteracy: (catMap.information_literacy || 0) + '%'
+                    },
+                    learnerRoster: cleanStudentList
+                };
+
+                const payload = { stats: structuredCohortStats, scope: "class" };
                 const response = await fetch('../../backend/api/groq_analytics.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -492,14 +792,44 @@ document.addEventListener("DOMContentLoaded", function() {
                 const result = await response.json();
                 if (result.success) {
                     aiInsightsResult.innerHTML = `
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fa-solid fa-sparkles text-warning me-2"></i>
-                            <h5 class="fw-bold mb-0 text-dark">Class Performance Insights</h5>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between border-bottom pb-3 mb-4 gap-2">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-3 me-3">
+                                    <i class="fa-solid fa-brain fa-xl"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-dark">NATG6 AI Pedagogical Pattern Analysis</h5>
+                                    <small class="text-muted">Generated by ${result.model || 'Qwen 3.8 27B'} • <i class="fa-regular fa-clock me-1"></i>${result.timestamp || 'Just now'}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-medium">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Analysis Generated Successfully
+                                </span>
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="window.printOfficialReport()">
+                                    <i class="fa-solid fa-print me-1"></i> Print / PDF
+                                </button>
+                            </div>
                         </div>
-                        <div class="ai-generated-content" style="font-size: 0.95rem; line-height: 1.6;">
+                        <div class="ai-generated-content" style="font-size: 0.95rem; line-height: 1.65;">
                             ${result.data}
                         </div>
                     `;
+
+                    // Trigger toast notification
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Insights Generated Successfully!',
+                        text: 'Class NATG6 pattern analysis is ready below.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true
+                    });
+
+                    // Smooth scroll to results
+                    aiInsightsResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 } else {
                     throw new Error(result.error || 'Failed to generate insights');
                 }
@@ -526,7 +856,23 @@ document.addEventListener("DOMContentLoaded", function() {
             resultBox.classList.remove('d-none');
 
             try {
-                const payload = { stats: currentViewedStudent, scope: "individual" };
+                // Build clean student summary without raw question attempts
+                const cleanStudent = {
+                    name: currentViewedStudent.name,
+                    level: currentViewedStudent.level,
+                    hp: currentViewedStudent.hp,
+                    xp: currentViewedStudent.xp,
+                    accuracy: currentViewedStudent.accuracy,
+                    correctAnswers: currentViewedStudent.correctAnswers,
+                    wrongAnswers: currentViewedStudent.wrongAnswers,
+                    totalAnswered: currentViewedStudent.totalAnswered,
+                    practiceRetries: currentViewedStudent.retryCount || 0,
+                    categoryBreakdown: currentViewedStudent.categoryBreakdown,
+                    primaryStruggle: currentViewedStudent.primaryStruggleCategory,
+                    strugglingCategories: currentViewedStudent.strugglingCategories
+                };
+
+                const payload = { stats: cleanStudent, scope: "individual" };
                 const response = await fetch('../../backend/api/groq_analytics.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -535,14 +881,37 @@ document.addEventListener("DOMContentLoaded", function() {
                 const result = await response.json();
                 if (result.success) {
                     resultBox.innerHTML = `
-                        <div class="fw-bold mb-2 text-primary"><i class="fa-solid fa-sparkles"></i> Personalized AI Insight</div>
-                        ${result.data}
+                        <div class="d-flex flex-wrap align-items-center justify-content-between border-bottom pb-2 mb-3 gap-2">
+                            <div class="fw-bold text-primary d-flex align-items-center">
+                                <i class="fa-solid fa-sparkles me-2 text-warning"></i>
+                                <span>Personalized NATG6 Diagnostic Profile</span>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 small">
+                                <i class="fa-solid fa-check me-1"></i> Generated Successfully
+                            </span>
+                        </div>
+                        <div class="ai-generated-content small" style="line-height: 1.65;">
+                            ${result.data}
+                        </div>
                     `;
+
+                    // Trigger toast notification
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Student Insight Generated!',
+                        text: `Diagnostic profile for ${currentViewedStudent.name} is ready.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
                 } else {
                     throw new Error(result.error || 'Failed to generate insights');
                 }
             } catch (err) {
-                resultBox.innerHTML = `<div class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> ${err.message}</div>`;
+                resultBox.innerHTML = `<div class="text-danger small"><i class="fa-solid fa-triangle-exclamation me-1"></i> ${err.message}</div>`;
+                Swal.fire('AI Error', err.message, 'error');
             } finally {
                 studentAiBtn.disabled = false;
                 studentAiBtn.innerHTML = '<i class="fa-solid fa-brain me-2"></i> Analyze Student';
@@ -560,9 +929,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const struggleContainer = document.getElementById('studentStruggleBadgeDisplay');
         if (struggleContainer) {
             let attemptBadgeHtml = `<div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 rounded-pill small"><i class="fa-solid fa-bookmark me-1"></i>Official Record: First Attempt</span>`;
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1 rounded-pill small"><i class="fa-solid fa-bookmark me-1"></i>Official Record: 1st Attempt (Diagnostic)</span>`;
             if (studentObj.retryCount && studentObj.retryCount > 0) {
-                attemptBadgeHtml += `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2.5 py-1 rounded-pill small"><i class="fa-solid fa-rotate-right me-1"></i>${studentObj.retryCount} Practice Retries Logged</span>`;
+                attemptBadgeHtml += `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2.5 py-1 rounded-pill small"><i class="fa-solid fa-rotate-right me-1"></i>${studentObj.retryCount} Practice Retries (Excluded from Baseline)</span>`;
             }
             attemptBadgeHtml += `</div>`;
 
@@ -870,7 +1239,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const categoryOffsets = { vocabulary: 15, grammar: 0, reading: -12, spelling: -25, information_literacy: -5 };
 
         categories.forEach((cat) => {
-            if (studentObj.gameStats && studentObj.gameStats.categories && studentObj.gameStats.categories[cat]) {
+            if (studentObj.firstAttemptCategories && studentObj.firstAttemptCategories[cat] && studentObj.firstAttemptCategories[cat].total > 0) {
+                const stats = studentObj.firstAttemptCategories[cat];
+                breakdown.categories[cat] = Math.round((stats.correct / stats.total) * 100);
+            } else if (studentObj.gameStats && studentObj.gameStats.categories && studentObj.gameStats.categories[cat]) {
                 const stats = studentObj.gameStats.categories[cat];
                 breakdown.categories[cat] = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : overallAccuracy;
             } else if (catStats[cat] && catStats[cat].total > 0) {
@@ -1325,5 +1697,222 @@ document.addEventListener("DOMContentLoaded", function() {
             confirmButtonColor: '#A594F9',
             confirmButtonText: 'Apply Recommendation'
         });
+    };
+
+    // --- Official NATG6 Assessment Report Exporter & Printer ---
+    window.openOfficialReportModal = function() {
+        const students = window.currentGlobalStats || [];
+        if (!students || students.length === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: dataLoaded ? 'No Student Data' : 'Data Still Loading',
+                text: dataLoaded
+                    ? 'No students found in the database to generate a report for.'
+                    : 'Please wait a moment while student data is being fetched from Firebase, then try again.',
+                confirmButtonColor: '#A594F9'
+            });
+            return;
+        }
+
+        const dateEl = document.getElementById('reportGeneratedDate');
+        if (dateEl) {
+            dateEl.innerText = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        const totalStudents = students.length;
+        let totalAccuracySum = 0;
+        let passingCount = 0; // >= 60%
+        let atRiskCount = 0; // < 50% or HP <= 20
+        let masteredCount = 0;
+        let proficientCount = 0;
+        let developingCount = 0;
+        let needsSupportCount = 0;
+
+        students.forEach(s => {
+            const acc = parseInt(s.accuracy) || 0;
+            totalAccuracySum += acc;
+            if (acc >= 60) passingCount++;
+            if (acc < 50 || s.hp <= 20) atRiskCount++;
+
+            if (acc >= 75) masteredCount++;
+            else if (acc >= 60) proficientCount++;
+            else if (acc >= 50) developingCount++;
+            else needsSupportCount++;
+        });
+
+        const meanAccuracy = totalStudents > 0 ? Math.round(totalAccuracySum / totalStudents) : 0;
+        const passingRate = totalStudents > 0 ? Math.round((passingCount / totalStudents) * 100) : 0;
+
+        // Update Summary Cards
+        if (document.getElementById('repTotalStudents')) document.getElementById('repTotalStudents').innerText = totalStudents;
+        if (document.getElementById('repMeanAccuracy')) document.getElementById('repMeanAccuracy').innerText = `${meanAccuracy}%`;
+        if (document.getElementById('repPassingRate')) document.getElementById('repPassingRate').innerText = `${passingRate}%`;
+        if (document.getElementById('repPassingCount')) document.getElementById('repPassingCount').innerText = `${passingCount} of ${totalStudents} passed MPL`;
+        if (document.getElementById('repAtRiskCount')) document.getElementById('repAtRiskCount').innerText = atRiskCount;
+
+        // Update 4-Tier Distribution Table
+        const mPct = totalStudents > 0 ? Math.round((masteredCount / totalStudents) * 100) : 0;
+        const pPct = totalStudents > 0 ? Math.round((proficientCount / totalStudents) * 100) : 0;
+        const dPct = totalStudents > 0 ? Math.round((developingCount / totalStudents) * 100) : 0;
+        const nPct = totalStudents > 0 ? Math.round((needsSupportCount / totalStudents) * 100) : 0;
+
+        if (document.getElementById('tableMasteredCount')) document.getElementById('tableMasteredCount').innerText = masteredCount;
+        if (document.getElementById('tableMasteredPct')) document.getElementById('tableMasteredPct').innerText = `${mPct}%`;
+        if (document.getElementById('tableProficientCount')) document.getElementById('tableProficientCount').innerText = proficientCount;
+        if (document.getElementById('tableProficientPct')) document.getElementById('tableProficientPct').innerText = `${pPct}%`;
+        if (document.getElementById('tableDevelopingCount')) document.getElementById('tableDevelopingCount').innerText = developingCount;
+        if (document.getElementById('tableDevelopingPct')) document.getElementById('tableDevelopingPct').innerText = `${dPct}%`;
+        if (document.getElementById('tableNeedsSupportCount')) document.getElementById('tableNeedsSupportCount').innerText = needsSupportCount;
+        if (document.getElementById('tableNeedsSupportPct')) document.getElementById('tableNeedsSupportPct').innerText = `${nPct}%`;
+
+        // Update NATG6 Domain Competency Table
+        const domainTableBody = document.getElementById('reportDomainTableBody');
+        if (domainTableBody) {
+            domainTableBody.innerHTML = '';
+            const domains = [
+                { key: 'reading', label: 'Reading Comprehension (RC)', desc: 'Literal, inferential, and evaluative text comprehension.' },
+                { key: 'grammar', label: 'Grammar (GR)', desc: 'Sentence construction, tenses, conjunctions, and parts of speech.' },
+                { key: 'vocabulary', label: 'Vocabulary (VC)', desc: 'Context clues, affixes, synonyms/antonyms, and word knowledge.' },
+                { key: 'information_literacy', label: 'Information Literacy (IL)', desc: 'Source evaluation, text evidence, and fact-checking.' },
+                { key: 'spelling', label: 'Spelling (SP)', desc: 'Orthographic word construction and vowel/consonant rules.' }
+            ];
+
+            const classCats = window.currentClassCategories || {};
+
+            domains.forEach(d => {
+                const score = classCats[d.key] || 0;
+                let statusBadge = '';
+                let diagnosis = '';
+
+                if (score >= 75) {
+                    statusBadge = '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Mastered</span>';
+                    diagnosis = 'Cohort demonstrates strong competence in this domain.';
+                } else if (score >= 60) {
+                    statusBadge = '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">Proficient</span>';
+                    diagnosis = 'Standard proficiency achieved; reinforce medium-level quests.';
+                } else if (score >= 50) {
+                    statusBadge = '<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Developing</span>';
+                    diagnosis = 'Struggle threshold detected; assign Level 2 practice cards.';
+                } else {
+                    statusBadge = '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">Needs Support</span>';
+                    diagnosis = 'Critical learning bottleneck; immediate remedial review recommended.';
+                }
+
+                // Count struggling students in this domain (< 60%)
+                let domainStruggleCount = 0;
+                students.forEach(s => {
+                    const brk = getStudentBreakdown(s);
+                    if ((brk.categories[d.key] || 0) < 60) domainStruggleCount++;
+                });
+
+                domainTableBody.innerHTML += `
+                    <tr>
+                        <td class="text-start">
+                            <strong>${d.label}</strong>
+                            <br><small class="text-muted">${d.desc}</small>
+                        </td>
+                        <td class="fw-bold fs-6">${score}%</td>
+                        <td>${statusBadge}</td>
+                        <td class="${domainStruggleCount > 0 ? 'text-danger fw-bold' : 'text-success'}">${domainStruggleCount} students</td>
+                        <td class="text-start small">${diagnosis}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Update Student Performance Roster Table
+        const studentTableBody = document.getElementById('reportStudentTableBody');
+        if (studentTableBody) {
+            studentTableBody.innerHTML = '';
+            students.forEach(s => {
+                const acc = parseInt(s.accuracy) || 0;
+                let tierBadge = '';
+                if (acc >= 75) tierBadge = '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Mastered</span>';
+                else if (acc >= 60) tierBadge = '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">Proficient</span>';
+                else if (acc >= 50) tierBadge = '<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Developing</span>';
+                else tierBadge = '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">Needs Support</span>';
+
+                studentTableBody.innerHTML += `
+                    <tr>
+                        <td class="fw-semibold text-dark">${s.name}</td>
+                        <td class="text-center">Lvl ${s.level}</td>
+                        <td class="text-center text-success fw-bold">${(s.xp || 0).toLocaleString()} XP</td>
+                        <td class="text-center ${s.hp <= 20 ? 'text-danger fw-bold' : 'text-muted'}">${s.hp}/100</td>
+                        <td class="text-center fw-bold ${acc >= 60 ? 'text-success' : 'text-danger'}">${acc}% <small class="text-muted fw-normal">(${s.correctAnswers || 0}/${s.totalAnswered || 0})</small></td>
+                        <td class="text-center">${tierBadge}</td>
+                        <td class="small text-danger fw-semibold">${s.primaryStruggleCategory || 'None Identified'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Attach AI Plan if generated
+        const aiBox = document.getElementById('aiInsightsResult');
+        const reportAiContent = document.getElementById('reportAiPlanContent');
+        if (aiBox && !aiBox.classList.contains('d-none') && reportAiContent) {
+            reportAiContent.innerHTML = aiBox.innerHTML;
+        }
+
+        const reportModal = new bootstrap.Modal(document.getElementById('officialReportModal'));
+        reportModal.show();
+    };
+
+    window.exportReportCsv = function() {
+        const students = window.currentGlobalStats || [];
+        if (!students || students.length === 0) {
+            Swal.fire('No Data', 'There is no student data available to export.', 'info');
+            return;
+        }
+
+        let csv = '\uFEFF'; // UTF-8 BOM for Excel
+        csv += 'QUESTLEARN - NATG6 ENGLISH STANDARDIZED ASSESSMENT REPORT\r\n';
+        csv += `Report Generation Date: "${new Date().toLocaleString()}"\r\n`;
+        csv += `Assessed Cohort: Grade 6 English\r\n`;
+        csv += `Total Students: ${students.length}\r\n\r\n`;
+
+        csv += 'Learner Name,RPG Level,Total XP,Health Points (HP),First-Attempt Accuracy %,Correct Answers,Wrong Answers,Total Questions Answered,Practice Retries Count,Proficiency Tier,Primary Struggle Category\r\n';
+
+        students.forEach(s => {
+            const acc = parseInt(s.accuracy) || 0;
+            let tier = 'Needs Support';
+            if (acc >= 75) tier = 'Mastered';
+            else if (acc >= 60) tier = 'Proficient';
+            else if (acc >= 50) tier = 'Developing';
+
+            const cleanName = (s.name || 'Student').replace(/"/g, '""');
+            const cleanStruggle = (s.primaryStruggleCategory || 'None').replace(/"/g, '""');
+
+            csv += `"${cleanName}",${s.level || 1},${s.xp || 0},${s.hp || 100},${acc}%,${s.correctAnswers || 0},${s.wrongAnswers || 0},${s.totalAnswered || 0},${s.retryCount || 0},"${tier}","${cleanStruggle}"\r\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `QuestLearn_NATG6_Official_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'CSV Report Downloaded',
+                text: 'The spreadsheet has been saved to your downloads folder.',
+                confirmButtonColor: '#A594F9',
+                timer: 2000
+            });
+        }
+    };
+
+    window.printOfficialReport = function() {
+        window.print();
     };
 });

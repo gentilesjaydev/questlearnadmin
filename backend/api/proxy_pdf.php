@@ -12,6 +12,10 @@ if (strpos($url, 'cloudinary.com') === false) {
 
 require_once __DIR__ . '/../../secrets.php';
 
+if (!function_exists('curl_init')) {
+    die("PHP cURL extension is not enabled in your web server. Please enable extension=curl in php.ini.");
+}
+
 $apiKey = CLOUDINARY_API_KEY;
 $apiSecret = CLOUDINARY_API_SECRET;
 

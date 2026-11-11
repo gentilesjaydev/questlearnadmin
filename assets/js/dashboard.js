@@ -38,6 +38,7 @@ function initDashboard() {
                     studentList.push({ name: name, xp: xp, hp: hp, level: level });
                 }
             });
+            window.dashboardStudentList = studentList;
             
             document.getElementById('totalStudentsStat').innerText = studentCount.toLocaleString();
             document.getElementById('atRiskStat').innerText = atRiskCount.toLocaleString();
@@ -54,23 +55,32 @@ function initDashboard() {
             const dataPts = topStudents.map(s => s.xp);
             initPerformanceChart(labels, dataPts);
             
-            // Populate feed using real users
+            // Populate feed using real users (up to 8 students in a responsive grid)
             const feedContainer = document.getElementById('recentActivityFeed');
             feedContainer.innerHTML = '';
-            studentList.slice(0, 5).forEach(student => {
+            studentList.slice(0, 8).forEach(student => {
                 const hpColor = student.hp <= 20 ? 'text-danger' : (student.hp < 50 ? 'text-warning' : 'text-success');
+                const badgeColor = student.hp <= 20 ? 'danger' : (student.hp < 50 ? 'warning' : 'success');
                 feedContainer.innerHTML += `
-                    <div class="d-flex align-items-center p-3 bg-light rounded-3 border border-light transition-fast hover-shadow">
-                        <div class="bg-white p-2 rounded-circle shadow-sm me-3"><i class="fa-solid fa-heart ${hpColor}"></i></div>
-                        <div>
-                            <p class="mb-0 text-dark small"><strong>${student.name}</strong> • Level ${student.level}</p>
-                            <small class="text-muted" style="font-size: 0.75rem;">HP: <span class="${hpColor} fw-bold">${student.hp}/100</span> | Total XP: ${student.xp}</small>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <div class="d-flex align-items-center p-3 bg-light rounded-3 border border-light transition-fast hover-shadow h-100">
+                            <div class="bg-white p-2.5 rounded-circle shadow-sm me-3 text-center" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-user-graduate ${hpColor}"></i>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <p class="mb-0 text-dark fw-bold text-truncate small">${student.name}</p>
+                                <div class="d-flex align-items-center justify-content-between mt-1">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Lvl ${student.level}</span>
+                                    <span class="badge bg-${badgeColor} bg-opacity-10 text-${badgeColor} rounded-pill px-2 py-0.5" style="font-size: 0.7rem;"><i class="fa-solid fa-heart me-1"></i>${student.hp}/100</span>
+                                </div>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;"><i class="fa-solid fa-star text-warning me-1"></i>${student.xp.toLocaleString()} XP</small>
+                            </div>
                         </div>
                     </div>
                 `;
             });
             if(studentList.length === 0) {
-                feedContainer.innerHTML = '<p class="text-muted text-center py-4">No real students found.</p>';
+                feedContainer.innerHTML = '<div class="col-12 text-center text-muted py-4">No registered students found.</div>';
             }
         } else {
             // No users found
@@ -88,25 +98,8 @@ function initDashboard() {
             // Count the number of active game categories (grammar, vocabulary, etc.)
             const categoryCount = snapshot.numChildren();
             document.getElementById('activeQuestsStat').innerText = categoryCount.toLocaleString();
-            
-            let categoryLabels = [];
-            let categoryLevelsData = [];
-            
-            snapshot.forEach((child) => {
-                const categoryData = child.val();
-                const categoryName = child.key.replace('_', ' ').toUpperCase();
-                categoryLabels.push(categoryName.substring(0, 12));
-                
-                // Track how many "levels" or "questions" exist in each category
-                const levelCount = parseInt(categoryData.levelCount) || 0;
-                categoryLevelsData.push(levelCount);
-            });
-            
-            // Limit to top 5 categories for the bar chart
-            initEngagementChart(categoryLabels.slice(0, 5), categoryLevelsData.slice(0, 5));
         } else {
             document.getElementById('activeQuestsStat').innerText = '0';
-            initEngagementChart([], []);
         }
     }).catch(err => console.error("Error fetching quests:", err));
 }
@@ -185,38 +178,6 @@ function initDistributionChart(dataMap) {
             cutout: '75%',
             plugins: {
                 legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, boxWidth: 8 } }
-            }
-        }
-    });
-}
-
-let engChartInstance = null;
-function initEngagementChart(labels, dataPts) {
-    const ctx = document.getElementById('engagementChart').getContext('2d');
-    if(engChartInstance) engChartInstance.destroy();
-    
-    engChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels.length ? labels : ['No Quests'],
-            datasets: [
-                {
-                    label: 'Available Levels',
-                    data: dataPts.length ? dataPts : [0],
-                    backgroundColor: '#8b5cf6',
-                    borderRadius: 4,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8 } }
-            },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false } },
-                x: { grid: { display: false, drawBorder: false } }
             }
         }
     });

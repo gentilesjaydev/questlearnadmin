@@ -21,15 +21,78 @@
             <?php include $base . 'includes/components/navbar.php'; ?>
 
             <div class="container-fluid p-4 p-md-5">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
                     <div>
-                        <h2 class="fw-bolder mb-1" style="color: var(--text-main); letter-spacing: -1.5px; font-size: 2.2rem;">Performance Analytics</h2>
-                        <p class="text-muted" style="font-size: 1.05rem; font-weight: 500;">Deep dive into student gamification metrics and progress.</p>
+                        <h2 class="fw-bolder mb-1" style="color: var(--text-main); letter-spacing: -1.5px; font-size: 2.2rem;">Performance Analytics & Reporting</h2>
+                        <p class="text-muted mb-0" style="font-size: 1.05rem; font-weight: 500;">NATG6 standardized assessment diagnostics, competency tracking, and official reporting.</p>
                     </div>
-                    <div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button onclick="openOfficialReportModal()" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm fw-bold bg-white">
+                            <i class="fa-solid fa-file-invoice me-2 text-primary"></i> Official Assessment Report
+                        </button>
                         <button id="aiInsightsBtn" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm fw-bold">
                             <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Generate AI Insights
                         </button>
+                    </div>
+                </div>
+
+                <!-- DepEd 4-Tier Proficiency Level Benchmark Summary -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">
+                                    <i class="fa-solid fa-shield-halved text-primary me-2"></i> NATG6 Official Proficiency Distribution (DepEd Standards)
+                                </h5>
+                                <small class="text-muted">Standards-based classification across all assessed Grade 6 learners based on official First Attempts.</small>
+                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                                <i class="fa-solid fa-circle-check me-1"></i> MPL Passing Benchmark: 60% Accuracy
+                            </span>
+                        </div>
+                        
+                        <div class="row g-3 text-center" id="proficiencyBenchmarkCards">
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
+                                    <div class="d-flex align-items-center justify-content-center mb-1">
+                                        <span class="badge bg-success text-white px-2 py-0.5 rounded-pill small me-1.5">&ge; 75%</span>
+                                        <h6 class="fw-bold text-success mb-0">Mastered</h6>
+                                    </div>
+                                    <h3 class="fw-bolder text-success mb-0" id="tierMasteredCount">0</h3>
+                                    <small class="text-muted fw-medium" id="tierMasteredPct">0% of cohort</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
+                                    <div class="d-flex align-items-center justify-content-center mb-1">
+                                        <span class="badge bg-primary text-white px-2 py-0.5 rounded-pill small me-1.5">60 - 74%</span>
+                                        <h6 class="fw-bold text-primary mb-0">Proficient</h6>
+                                    </div>
+                                    <h3 class="fw-bolder text-primary mb-0" id="tierProficientCount">0</h3>
+                                    <small class="text-muted fw-medium" id="tierProficientPct">0% of cohort</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning border-opacity-25 h-100">
+                                    <div class="d-flex align-items-center justify-content-center mb-1">
+                                        <span class="badge bg-warning text-dark px-2 py-0.5 rounded-pill small me-1.5">50 - 59%</span>
+                                        <h6 class="fw-bold text-warning mb-0">Developing</h6>
+                                    </div>
+                                    <h3 class="fw-bolder text-warning mb-0" id="tierDevelopingCount">0</h3>
+                                    <small class="text-muted fw-medium" id="tierDevelopingPct">0% of cohort</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-25 h-100">
+                                    <div class="d-flex align-items-center justify-content-center mb-1">
+                                        <span class="badge bg-danger text-white px-2 py-0.5 rounded-pill small me-1.5">&lt; 50%</span>
+                                        <h6 class="fw-bold text-danger mb-0">Needs Support</h6>
+                                    </div>
+                                    <h3 class="fw-bolder text-danger mb-0" id="tierNeedsSupportCount">0</h3>
+                                    <small class="text-muted fw-medium" id="tierNeedsSupportPct">0% of cohort</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -199,6 +262,225 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- Official Assessment & Diagnostic Report Modal -->
+    <div class="modal fade" id="officialReportModal" tabindex="-1" aria-labelledby="officialReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-light border-0 d-flex justify-content-between align-items-center p-4">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0" id="officialReportModalLabel">
+                            <i class="fa-solid fa-file-invoice text-primary me-2"></i> Official NATG6 English Assessment Report
+                        </h5>
+                        <small class="text-muted">Standardized competency diagnostics and performance documentation.</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button onclick="printOfficialReport()" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm fw-bold">
+                            <i class="fa-solid fa-print me-1"></i> Print / Save PDF
+                        </button>
+                        <button onclick="exportReportCsv()" class="btn btn-sm btn-outline-success rounded-pill px-3 shadow-sm fw-bold bg-white">
+                            <i class="fa-solid fa-file-excel me-1"></i> Export CSV
+                        </button>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-4 p-md-5" id="printableReportArea">
+                    <!-- Report Header -->
+                    <div class="text-center pb-4 mb-4 border-bottom border-2 border-dark">
+                        <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+                            <img src="<?php echo $base; ?>assets/images/logo.png" alt="Logo" width="48" height="48" class="rounded-3 shadow-sm">
+                            <div class="text-start">
+                                <h4 class="fw-bolder mb-0 text-dark" style="letter-spacing: -0.5px;">QUESTLEARN GAMIFIED LEARNING SYSTEM</h4>
+                                <p class="text-muted small mb-0 fw-semibold text-uppercase" style="letter-spacing: 1px;">NATG6 English Competency Diagnostic & Assessment Report</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mt-3 px-2">
+                            <span><strong>Target Assessment:</strong> Grade 6 National Achievement Test (NATG6)</span>
+                            <span><strong>Date Generated:</strong> <span id="reportGeneratedDate">-</span></span>
+                            <span><strong>Cohort:</strong> Elementary English Grade 6</span>
+                        </div>
+                    </div>
+
+                    <!-- 1. Executive Performance Summary -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark text-uppercase small mb-3">
+                            <i class="fa-solid fa-chart-simple text-primary me-2"></i> 1. Executive Performance Summary
+                        </h6>
+                        <div class="row g-3 text-center">
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted text-uppercase fw-semibold" style="font-size:0.75rem;">Total Learners</small>
+                                    <h3 class="fw-bold text-dark mb-0 mt-1" id="repTotalStudents">0</h3>
+                                    <small class="text-muted" style="font-size:0.75rem;">Assessed cohort</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted text-uppercase fw-semibold" style="font-size:0.75rem;">Mean Class Accuracy</small>
+                                    <h3 class="fw-bold text-primary mb-0 mt-1" id="repMeanAccuracy">0%</h3>
+                                    <small class="text-muted" style="font-size:0.75rem;">Official first attempts</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted text-uppercase fw-semibold" style="font-size:0.75rem;">Meeting MPL (&ge;60%)</small>
+                                    <h3 class="fw-bold text-success mb-0 mt-1" id="repPassingRate">0%</h3>
+                                    <small class="text-muted" style="font-size:0.75rem;" id="repPassingCount">0 learners</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <small class="text-muted text-uppercase fw-semibold" style="font-size:0.75rem;">Critical / At-Risk</small>
+                                    <h3 class="fw-bold text-danger mb-0 mt-1" id="repAtRiskCount">0</h3>
+                                    <small class="text-muted" style="font-size:0.75rem;">Needs immediate support</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. DepEd 4-Tier Proficiency Distribution -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark text-uppercase small mb-3">
+                            <i class="fa-solid fa-layer-group text-primary me-2"></i> 2. DepEd Standards-Based Proficiency Distribution
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle mb-0 text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="py-2 text-start">Proficiency Classification</th>
+                                        <th class="py-2">Benchmark Range</th>
+                                        <th class="py-2">Student Count</th>
+                                        <th class="py-2">% of Cohort</th>
+                                        <th class="py-2 text-start">Prescribed Educational Intervention</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-start fw-bold text-success"><i class="fa-solid fa-circle-check me-2"></i>Mastered</td>
+                                        <td>75% – 100%</td>
+                                        <td id="tableMasteredCount" class="fw-bold">0</td>
+                                        <td id="tableMasteredPct">0%</td>
+                                        <td class="text-start small">Advanced enrichment, Level 4 boss challenges, and peer tutoring leads.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold text-primary"><i class="fa-solid fa-check me-2"></i>Proficient</td>
+                                        <td>60% – 74%</td>
+                                        <td id="tableProficientCount" class="fw-bold">0</td>
+                                        <td id="tableProficientPct">0%</td>
+                                        <td class="text-start small">Standard curricular pacing; Level 2-3 dungeon quests reinforcement.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold text-warning"><i class="fa-solid fa-triangle-exclamation me-2"></i>Developing</td>
+                                        <td>50% – 59%</td>
+                                        <td id="tableDevelopingCount" class="fw-bold">0</td>
+                                        <td id="tableDevelopingPct">0%</td>
+                                        <td class="text-start small">Targeted review sessions, vocabulary expansion, and guided practice.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start fw-bold text-danger"><i class="fa-solid fa-circle-exclamation me-2"></i>Needs Support</td>
+                                        <td>Below 50% / Crit. HP</td>
+                                        <td id="tableNeedsSupportCount" class="fw-bold">0</td>
+                                        <td id="tableNeedsSupportPct">0%</td>
+                                        <td class="text-start small text-danger fw-semibold">Mandatory remedial intervention, modified quest difficulty, HP incentives.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. NATG6 Domain Competency Scorecard -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark text-uppercase small mb-3">
+                            <i class="fa-solid fa-list-check text-primary me-2"></i> 3. NATG6 English Competency Domain Scorecard
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle mb-0 text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="py-2 text-start">NATG6 Competency Domain</th>
+                                        <th class="py-2">Class Mean Score</th>
+                                        <th class="py-2">Domain Status</th>
+                                        <th class="py-2">Struggling Learners (&lt;60%)</th>
+                                        <th class="py-2 text-start">Diagnostic Finding</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportDomainTableBody">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. Individual Student Performance Master Roster -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark text-uppercase small mb-3">
+                            <i class="fa-solid fa-users text-primary me-2"></i> 4. Individual Learner Assessment Roster
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th class="py-2 text-start">Learner Name</th>
+                                        <th class="py-2">Level</th>
+                                        <th class="py-2">Total XP</th>
+                                        <th class="py-2">Health (HP)</th>
+                                        <th class="py-2">First-Attempt Accuracy</th>
+                                        <th class="py-2">Proficiency Tier</th>
+                                        <th class="py-2 text-start">Identified Struggle Category</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportStudentTableBody">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 5. AI Heuristic Pedagogical Intervention Plan -->
+                    <div class="mb-4" id="reportAiPlanSection">
+                        <h6 class="fw-bold text-dark text-uppercase small mb-3">
+                            <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i> 5. AI Heuristic Pedagogical Remediation Plan
+                        </h6>
+                        <div id="reportAiPlanContent" class="bg-light p-4 rounded-3 border">
+                            <p class="text-muted small mb-0"><i class="fa-solid fa-info-circle me-1"></i> Generate AI Insights on the analytics dashboard to automatically attach detailed machine-learning pedagogical recommendations to this report.</p>
+                        </div>
+                    </div>
+
+                    <!-- 6. Formal Sign-off Block -->
+                    <div class="mt-5 pt-4 border-top">
+                        <div class="row text-center mt-4 g-4">
+                            <div class="col-4">
+                                <div class="border-top border-dark pt-2 mx-auto" style="max-width: 200px;">
+                                    <p class="fw-bold mb-0 text-dark small">Subject Teacher</p>
+                                    <small class="text-muted">Prepared By</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border-top border-dark pt-2 mx-auto" style="max-width: 200px;">
+                                    <p class="fw-bold mb-0 text-dark small">English Dept. Coordinator</p>
+                                    <small class="text-muted">Reviewed By</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border-top border-dark pt-2 mx-auto" style="max-width: 200px;">
+                                    <p class="fw-bold mb-0 text-dark small">School Principal / Head</p>
+                                    <small class="text-muted">Approved By</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 d-flex justify-content-between p-3">
+                    <small class="text-muted"><i class="fa-solid fa-shield-check text-success me-1"></i> Formatted in compliance with NATG6 DepEd Table of Specifications</small>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close</button>
+                        <button onclick="exportReportCsv()" class="btn btn-outline-success px-4 rounded-pill fw-bold bg-white"><i class="fa-solid fa-file-excel me-1"></i> Export CSV</button>
+                        <button onclick="printOfficialReport()" class="btn btn-primary px-4 rounded-pill fw-bold"><i class="fa-solid fa-print me-1"></i> Print / Save PDF</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
