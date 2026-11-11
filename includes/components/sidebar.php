@@ -14,12 +14,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <li class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
             <a href="<?php echo $base; ?>index"><i class="fa-solid fa-chart-line"></i> Analytics Dashboard</a>
         </li>
-        <li class="<?php echo ($current_page == 'students.php' || $current_page == 'performance.php') ? 'active' : ''; ?>">
-            <a href="#studentSubmenu" data-bs-toggle="collapse" aria-expanded="<?php echo ($current_page == 'students.php' || $current_page == 'performance.php') ? 'true' : 'false'; ?>" class="dropdown-toggle d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center"><i class="fa-solid fa-users"></i> Student Management</div>
+        <?php 
+        $is_student_active = in_array($current_page, ['students.php', 'competency-tracking.php', 'assessment-reporting.php', 'performance.php']);
+        ?>
+        <li class="<?php echo $is_student_active ? 'active' : ''; ?>">
+            <a href="#studentSubmenu" data-bs-toggle="collapse" aria-expanded="<?php echo $is_student_active ? 'true' : 'false'; ?>" class="dropdown-toggle d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center"><i class="fa-solid fa-users"></i> Student Account Management</div>
             </a>
-            <ul class="collapse list-unstyled <?php echo ($current_page == 'students.php' || $current_page == 'performance.php') ? 'show' : ''; ?>" id="studentSubmenu">
-                <li class="<?php echo ($current_page == 'students.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/students"><i class="fa-solid fa-address-book"></i> View Roster</a></li>
+            <ul class="collapse list-unstyled <?php echo $is_student_active ? 'show' : ''; ?>" id="studentSubmenu">
+                <li class="<?php echo ($current_page == 'students.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/students"><i class="fa-solid fa-address-book"></i> Student Accounts</a></li>
+                <li class="<?php echo ($current_page == 'competency-tracking.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/competency-tracking"><i class="fa-solid fa-award"></i> Competency Tracking</a></li>
+                <li class="<?php echo ($current_page == 'assessment-reporting.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/assessment-reporting"><i class="fa-solid fa-file-invoice"></i> Assessment Reporting</a></li>
                 <li class="<?php echo ($current_page == 'performance.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/performance"><i class="fa-solid fa-chart-pie"></i> Performance Analytics</a></li>
             </ul>
         </li>

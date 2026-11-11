@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Roster - QuestLearn</title>
+    <title>Student Account Management - QuestLearn</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css?v=<?php echo time(); ?>">
@@ -19,12 +19,12 @@
                 <div class="row align-items-center mb-4 gy-3">
                     <div class="col-12 col-xl-5">
                         <div class="d-flex align-items-center gap-2 gap-sm-3 flex-wrap">
-                            <h2 class="fw-bolder mb-0" style="color: var(--text-main); letter-spacing: -1px; font-size: 1.85rem;">Student Management</h2>
+                            <h2 class="fw-bolder mb-0" style="color: var(--text-main); letter-spacing: -1px; font-size: 1.85rem;">Student Account Management</h2>
                             <span id="studentCountBadge" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2.5 py-1.5 rounded-pill fw-bold small">
                                 <i class="fa-solid fa-users me-1"></i> Syncing...
                             </span>
                         </div>
-                        <p class="text-muted mb-0 mt-1 small" style="font-weight: 500;"><i class="fa-solid fa-circle-dot text-success me-1.5"></i> Live connection to Firebase database & class sections</p>
+                        <p class="text-muted mb-0 mt-1 small" style="font-weight: 500;"><i class="fa-solid fa-circle-dot text-success me-1.5"></i> Manage learner accounts, NATG6 section assignments, and diagnostic telemetry</p>
                     </div>
                     <div class="col-12 col-xl-7">
                         <div class="d-flex flex-wrap justify-content-xl-end align-items-center gap-2">
