@@ -59,8 +59,8 @@ body {
 
 /* ---------------- Sidebar Styles ---------------- */
 #sidebar {
-    min-width: 285px;
-    max-width: 285px;
+    min-width: 315px;
+    max-width: 315px;
     background: var(--sidebar-bg);
     color: var(--sidebar-text);
     transition: var(--transition-fast);
@@ -82,7 +82,7 @@ body {
 }
 
 #sidebar.toggled {
-    margin-left: -285px;
+    margin-left: -315px;
 }
 
 /* ---------------- Mobile Responsiveness ---------------- */
@@ -107,7 +107,7 @@ body {
 @media (max-width: 768px) {
     #sidebar {
         position: fixed;
-        margin-left: -285px;
+        margin-left: -315px;
         height: 100vh;
         z-index: 1000;
     }
@@ -136,17 +136,17 @@ body {
         margin-left: 0;
     }
     #sidebar.toggled {
-        margin-left: -285px;
+        margin-left: -315px;
     }
 }
 
 #sidebar .sidebar-header {
-    padding: 24px 22px;
+    padding: 20px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.3);
 }
 
 #sidebar .sidebar-header h3 {
-    font-size: 1.55rem;
+    font-size: 1.5rem;
     font-weight: 800;
     margin: 0;
     letter-spacing: -0.5px;
@@ -155,12 +155,12 @@ body {
 }
 
 #sidebar ul.components {
-    padding: 18px 14px;
+    padding: 16px 12px;
 }
 
 #sidebar ul li a {
-    padding: 9px 14px;
-    font-size: 0.95rem;
+    padding: 9px 12px;
+    font-size: 0.94rem;
     display: flex;
     align-items: center;
     color: var(--sidebar-text);
@@ -172,15 +172,15 @@ body {
 }
 
 #sidebar ul li a i {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.25);
     border-radius: 8px;
-    margin-right: 12px;
-    font-size: 1rem;
+    margin-right: 11px;
+    font-size: 0.95rem;
     color: var(--sidebar-text);
     transition: var(--transition-base);
     flex-shrink: 0;
@@ -209,11 +209,11 @@ body {
 }
 
 #sidebar ul ul a {
-    font-size: 0.9rem;
-    padding-left: 46px;
+    font-size: 0.88rem;
+    padding-left: 42px;
     padding-right: 12px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 7px;
+    padding-bottom: 7px;
     color: var(--sidebar-text);
     font-weight: 500;
     border-radius: var(--radius-md);
@@ -225,8 +225,8 @@ body {
     background: transparent !important;
     width: auto !important;
     height: auto !important;
-    font-size: 0.9rem !important;
-    margin-right: 10px !important;
+    font-size: 0.88rem !important;
+    margin-right: 9px !important;
     color: inherit !important;
 }
 
