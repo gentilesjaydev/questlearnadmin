@@ -299,15 +299,29 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        // Attach listener immediately or retry until Firebase is initialized
+        // Attach listener immediately or retry until Firebase & Auth are initialized
         if (!attachUsersListener()) {
             let attempts = 0;
             const timer = setInterval(() => {
                 attempts++;
-                if (attachUsersListener() || attempts > 10) {
+                if (attachUsersListener() || attempts > 15) {
                     clearInterval(timer);
                 }
-            }, 400);
+            }, 300);
+        }
+
+        // Also re-trigger when Firebase Auth state changes so secure read permissions succeed
+        try {
+            const authObj = (typeof auth !== 'undefined') ? auth : (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+            if (authObj && authObj.onAuthStateChanged) {
+                authObj.onAuthStateChanged(user => {
+                    if (user) {
+                        attachUsersListener();
+                    }
+                });
+            }
+        } catch(e) {
+            console.debug("Auth listener notice:", e);
         }
     })();
 });

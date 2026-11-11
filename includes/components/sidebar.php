@@ -15,7 +15,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <a href="<?php echo $base; ?>index"><i class="fa-solid fa-chart-line"></i> Analytics Dashboard</a>
         </li>
         <?php 
-        $is_student_active = in_array($current_page, ['students.php', 'competency-tracking.php', 'assessment-reporting.php', 'performance.php']);
+        $is_student_active = in_array($current_page, ['students.php', 'competency-tracking.php', 'assessment-reporting.php', 'performance.php', 'learning-pattern-methodology.php']);
         ?>
         <li class="<?php echo $is_student_active ? 'active' : ''; ?>">
             <a href="#studentSubmenu" data-bs-toggle="collapse" aria-expanded="<?php echo $is_student_active ? 'true' : 'false'; ?>" class="dropdown-toggle d-flex align-items-center justify-content-between">
@@ -26,6 +26,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <li class="<?php echo ($current_page == 'competency-tracking.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/competency-tracking"><i class="fa-solid fa-award"></i> Competency Tracking</a></li>
                 <li class="<?php echo ($current_page == 'assessment-reporting.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/assessment-reporting"><i class="fa-solid fa-file-invoice"></i> Assessment Reporting</a></li>
                 <li class="<?php echo ($current_page == 'performance.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/performance"><i class="fa-solid fa-chart-pie"></i> Performance Analytics</a></li>
+                <li class="<?php echo ($current_page == 'learning-pattern-methodology.php') ? 'active' : ''; ?>"><a href="<?php echo $base; ?>pages/teacher/learning-pattern-methodology"><i class="fa-solid fa-brain"></i> Learning Pattern Methodology</a></li>
             </ul>
         </li>
         <li class="<?php echo ($current_page == 'quests.php') ? 'active' : ''; ?>">

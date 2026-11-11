@@ -26,7 +26,16 @@
                         <h2 class="fw-bolder mb-1" style="color: var(--text-main); letter-spacing: -1.5px; font-size: 2.2rem;">Performance Analytics & Reporting</h2>
                         <p class="text-muted mb-0" style="font-size: 1.05rem; font-weight: 500;">NATG6 standardized assessment diagnostics, competency tracking, and official reporting.</p>
                     </div>
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <a href="<?php echo $base; ?>pages/teacher/competency-tracking" class="btn btn-outline-secondary px-3 py-2 rounded-pill shadow-sm fw-bold bg-white text-dark">
+                            <i class="fa-solid fa-award me-1.5 text-warning"></i> COMPETENCY TRACKING
+                        </a>
+                        <a href="<?php echo $base; ?>pages/teacher/assessment-reporting" class="btn btn-outline-secondary px-3 py-2 rounded-pill shadow-sm fw-bold bg-white text-dark">
+                            <i class="fa-solid fa-file-invoice me-1.5 text-info"></i> ASSESSMENT REPORTING
+                        </a>
+                        <a href="<?php echo $base; ?>pages/teacher/learning-pattern-methodology" class="btn btn-outline-primary px-3 py-2 rounded-pill shadow-sm fw-bold bg-white">
+                            <i class="fa-solid fa-brain me-1.5 text-primary"></i> Learning Pattern Methodology
+                        </a>
                         <button onclick="openOfficialReportModal()" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm fw-bold bg-white">
                             <i class="fa-solid fa-file-invoice me-2 text-primary"></i> Official Assessment Report
                         </button>
