@@ -113,9 +113,23 @@ document.addEventListener("DOMContentLoaded", function() {
             // Sort alphabetically by name
             allStudents.sort((a, b) => a.name.localeCompare(b.name));
 
-            updateKpiStats(allStudents);
-            updateBarChart(allStudents);
-            renderTable();
+            try {
+                updateKpiStats(allStudents);
+            } catch (err) {
+                console.error("Error in updateKpiStats:", err);
+            }
+
+            try {
+                renderTable();
+            } catch (err) {
+                console.error("Error in renderTable:", err);
+            }
+
+            try {
+                updateBarChart(allStudents);
+            } catch (err) {
+                console.error("Error in updateBarChart:", err);
+            }
         });
     }
 
@@ -459,154 +473,195 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Update Cohort Competency Bar Chart
     function updateBarChart(students) {
-        const assessed = students.filter(s => s.totalAnswers > 0);
-        const compKeys = ['Linguistic Proficiency', 'Comprehension Ability', 'Critical Thinking', 'Information Literacy', 'Active Listening'];
-        const compAverages = compKeys.map(k => {
-            if (assessed.length === 0) return 0;
-            const sum = assessed.reduce((acc, s) => acc + (s.competencies[k] || 0), 0);
-            return Math.round(sum / assessed.length);
-        });
+        try {
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js is not loaded');
+                return;
+            }
 
-        const ctx = document.getElementById('classCompetencyBarChart');
-        if (!ctx) return;
+            const canvas = document.getElementById('classCompetencyBarChart');
+            if (!canvas) return;
 
-        if (barChartInstance) barChartInstance.destroy();
+            const assessed = (students || []).filter(s => s && s.totalAnswers > 0);
+            const compKeys = ['Linguistic Proficiency', 'Comprehension Ability', 'Critical Thinking', 'Information Literacy', 'Active Listening'];
+            const compAverages = compKeys.map(k => {
+                if (assessed.length === 0) return 0;
+                const sum = assessed.reduce((acc, s) => acc + ((s.competencies && s.competencies[k]) || 0), 0);
+                return Math.round(sum / assessed.length);
+            });
 
-        barChartInstance = new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Linguistic Prof.', 'Comprehension', 'Critical Thinking', 'Info Literacy', 'Active Listening'],
-                datasets: [{
-                    label: 'Cohort Average Mastery (%)',
-                    data: compAverages,
-                    backgroundColor: [
-                        'rgba(165, 148, 249, 0.85)',
-                        'rgba(59, 130, 246, 0.85)',
-                        'rgba(16, 185, 129, 0.85)',
-                        'rgba(245, 158, 11, 0.85)',
-                        'rgba(239, 68, 68, 0.85)'
-                    ],
-                    borderRadius: 6,
-                    barThickness: 28
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(c) { return ` Average Score: ${c.parsed.y}%`; }
+            // Cleanly destroy any existing chart on this canvas
+            try {
+                const existing = Chart.getChart ? Chart.getChart(canvas) : null;
+                if (existing) existing.destroy();
+                else if (barChartInstance) barChartInstance.destroy();
+            } catch (err) {
+                console.warn('Destroy existing chart error:', err);
+            }
+
+            const ctx = canvas.getContext('2d');
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Linguistic Prof.', 'Comprehension', 'Critical Thinking', 'Info Literacy', 'Active Listening'],
+                    datasets: [{
+                        label: 'Cohort Average Mastery (%)',
+                        data: compAverages,
+                        backgroundColor: [
+                            'rgba(165, 148, 249, 0.85)',
+                            'rgba(59, 130, 246, 0.85)',
+                            'rgba(16, 185, 129, 0.85)',
+                            'rgba(245, 158, 11, 0.85)',
+                            'rgba(239, 68, 68, 0.85)'
+                        ],
+                        borderRadius: 6,
+                        barThickness: 28
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(c) { return ` Average Score: ${c.parsed.y}%`; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 20, callback: v => v + '%' }
+                        },
+                        x: {
+                            grid: { display: false }
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: { stepSize: 20, callback: v => v + '%' }
-                    },
-                    x: {
-                        grid: { display: false }
-                    }
                 }
-            }
-        });
+            });
+        } catch (err) {
+            console.error('Error updating bar chart:', err);
+        }
     }
 
     // Helper: Mini progress bar element generator
     function renderMiniBar(score) {
+        const sc = (typeof score === 'number') ? score : (Number(score) || 0);
         let barColor = 'bg-success';
-        if (score < 50) barColor = 'bg-danger';
-        else if (score < 60) barColor = 'bg-warning';
-        else if (score < 75) barColor = 'bg-primary';
+        if (sc < 50) barColor = 'bg-danger';
+        else if (sc < 60) barColor = 'bg-warning';
+        else if (sc < 75) barColor = 'bg-primary';
 
         return `
             <div class="d-flex align-items-center gap-2">
                 <div class="progress flex-grow-1" style="height: 6px; background-color: #f1f5f9;">
-                    <div class="progress-bar ${barColor} rounded-pill" role="progressbar" style="width: ${score}%;"></div>
+                    <div class="progress-bar ${barColor} rounded-pill" role="progressbar" style="width: ${Math.min(100, Math.max(0, sc))}%;"></div>
                 </div>
-                <span class="small fw-bold text-dark" style="font-size: 0.78rem; min-width: 32px;">${score}%</span>
+                <span class="small fw-bold text-dark" style="font-size: 0.78rem; min-width: 32px;">${sc}%</span>
             </div>
         `;
     }
 
     // Filter and Render Table
     function renderTable() {
-        const secFilter = sectionSelect ? sectionSelect.value : 'ALL';
-        const stFilter = statusFilter ? statusFilter.value : 'ALL';
-        const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        try {
+            const tBody = tableBody || document.getElementById('competencyTableBody');
+            if (!tBody) return;
 
-        const filtered = allStudents.filter(s => {
-            const matchSec = (secFilter === 'ALL') || (s.section === secFilter);
-            const matchStatus = (stFilter === 'ALL') || (s.status === stFilter);
-            const matchSearch = (!search) || s.name.toLowerCase().includes(search) || s.email.toLowerCase().includes(search);
-            return matchSec && matchStatus && matchSearch;
-        });
+            const secFilter = sectionSelect ? sectionSelect.value : 'ALL';
+            const stFilter = statusFilter ? statusFilter.value : 'ALL';
+            const search = searchInput ? (searchInput.value || '').toLowerCase().trim() : '';
 
-        if (countBadge) {
-            countBadge.textContent = `Showing ${filtered.length} of ${allStudents.length} learners`;
+            const filtered = (allStudents || []).filter(s => {
+                if (!s) return false;
+                const matchSec = (secFilter === 'ALL') || (s.section === secFilter);
+                const matchStatus = (stFilter === 'ALL') || (s.status === stFilter);
+                const sName = (s.name || '').toLowerCase();
+                const sEmail = (s.email || '').toLowerCase();
+                const matchSearch = (!search) || sName.includes(search) || sEmail.includes(search);
+                return matchSec && matchStatus && matchSearch;
+            });
+
+            if (countBadge) {
+                countBadge.textContent = `Showing ${filtered.length} of ${allStudents.length} learners`;
+            }
+
+            if (filtered.length === 0) {
+                tBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-folder-open fa-2x mb-2 text-secondary opacity-50"></i><br>
+                            No students match the selected filter criteria.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(s => {
+                const comps = s.competencies || {
+                    'Linguistic Proficiency': 0,
+                    'Comprehension Ability': 0,
+                    'Critical Thinking': 0,
+                    'Information Literacy': 0,
+                    'Active Listening': 0
+                };
+                const wScore = (typeof s.weightedScore === 'number') ? s.weightedScore : (s.accuracy || 0);
+                const wDelta = (typeof s.wpsDelta === 'number') ? s.wpsDelta : 0;
+                const margin = (s.thresholdData && typeof s.thresholdData.mplMargin === 'number') ? s.thresholdData.mplMargin : (wScore - 60);
+
+                let thresholdBadge = `<span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-0.5 rounded-pill" style="font-size: 0.7rem;">Pending</span>`;
+                if (s.totalAnswers > 0) {
+                    if (s.thresholdPassed || wScore >= 60) {
+                        thresholdBadge = `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 rounded-pill fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-check-circle me-1"></i>Cleared ≥60%</span>`;
+                    } else {
+                        thresholdBadge = `<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-0.5 rounded-pill fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Deficit (${margin >= 0 ? '+' : ''}${margin}%)</span>`;
+                    }
+                }
+
+                html += `
+                    <tr>
+                        <td class="px-3 py-3">
+                            <div class="fw-bold text-dark" style="font-size: 0.92rem;">${s.name}</div>
+                            <span class="badge bg-light text-muted border px-2 py-0.5 rounded-pill" style="font-size: 0.7rem;">
+                                <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Section ${s.section}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3">${renderMiniBar(comps['Linguistic Proficiency'])}</td>
+                        <td class="px-3 py-3">${renderMiniBar(comps['Comprehension Ability'])}</td>
+                        <td class="px-3 py-3">${renderMiniBar(comps['Critical Thinking'])}</td>
+                        <td class="px-3 py-3">${renderMiniBar(comps['Information Literacy'])}</td>
+                        <td class="px-3 py-3 text-center">
+                            <span class="fw-bold text-dark fs-6">${s.accuracy || 0}%</span>
+                        </td>
+                        <td class="px-3 py-3 text-center">
+                            <span class="fw-bold fs-6" style="color: #4f46e5;">${wScore}%</span><br>
+                            <small class="text-muted" style="font-size: 0.68rem;">${wDelta >= 0 ? '+' : ''}${wDelta}% vs raw</small>
+                        </td>
+                        <td class="px-3 py-3 text-center">
+                            ${thresholdBadge}
+                        </td>
+                        <td class="px-3 py-3 text-center">
+                            <span class="badge ${s.statusBadgeClass} px-2.5 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">
+                                ${s.status}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 text-end">
+                            <button onclick="window.openStudentDetail('${s.uid}')" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" title="View Full Competency Diagnostic Breakdown">
+                                <i class="fa-solid fa-chart-pie me-1"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tBody.innerHTML = html;
+        } catch (err) {
+            console.error('Error in renderTable:', err);
         }
-
-        if (filtered.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="10" class="text-center py-5 text-muted">
-                        <i class="fa-solid fa-folder-open fa-2x mb-2 text-secondary opacity-50"></i><br>
-                        No students match the selected filter criteria.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        let html = '';
-        filtered.forEach(s => {
-            const comps = s.competencies;
-            const thresholdBadge = (s.totalAnswers === 0)
-                ? `<span class="badge bg-secondary bg-opacity-10 text-secondary border px-2 py-0.5 rounded-pill" style="font-size: 0.7rem;">Pending</span>`
-                : (s.thresholdPassed
-                    ? `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-0.5 rounded-pill fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-check-circle me-1"></i>Cleared ≥60%</span>`
-                    : `<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-0.5 rounded-pill fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Deficit (${s.thresholdData.mplMargin}%)</span>`);
-
-            html += `
-                <tr>
-                    <td class="px-3 py-3">
-                        <div class="fw-bold text-dark" style="font-size: 0.92rem;">${s.name}</div>
-                        <span class="badge bg-light text-muted border px-2 py-0.5 rounded-pill" style="font-size: 0.7rem;">
-                            <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Section ${s.section}
-                        </span>
-                    </td>
-                    <td class="px-3 py-3">${renderMiniBar(comps['Linguistic Proficiency'])}</td>
-                    <td class="px-3 py-3">${renderMiniBar(comps['Comprehension Ability'])}</td>
-                    <td class="px-3 py-3">${renderMiniBar(comps['Critical Thinking'])}</td>
-                    <td class="px-3 py-3">${renderMiniBar(comps['Information Literacy'])}</td>
-                    <td class="px-3 py-3 text-center">
-                        <span class="fw-bold text-dark fs-6">${s.accuracy}%</span>
-                    </td>
-                    <td class="px-3 py-3 text-center">
-                        <span class="fw-bold fs-6" style="color: #4f46e5;">${s.weightedScore}%</span><br>
-                        <small class="text-muted" style="font-size: 0.68rem;">${s.wpsDelta >= 0 ? '+' : ''}${s.wpsDelta}% vs raw</small>
-                    </td>
-                    <td class="px-3 py-3 text-center">
-                        ${thresholdBadge}
-                    </td>
-                    <td class="px-3 py-3 text-center">
-                        <span class="badge ${s.statusBadgeClass} px-2.5 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">
-                            ${s.status}
-                        </span>
-                    </td>
-                    <td class="px-3 py-3 text-end">
-                        <button onclick="window.openStudentDetail('${s.uid}')" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" title="View Full Competency Diagnostic Breakdown">
-                            <i class="fa-solid fa-chart-pie me-1"></i> View
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        tableBody.innerHTML = html;
     }
 
     // Interactive Student Detail Modal
@@ -637,7 +692,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 threshBadge.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> Cleared DepEd MPL Gate (≥60%)';
             } else {
                 threshBadge.className = 'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-1.5 rounded-pill fw-bold';
-                threshBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i> Below MPL Threshold (${student.thresholdData.mplMargin}%)`;
+                const mMargin = (student.thresholdData && typeof student.thresholdData.mplMargin === 'number') ? student.thresholdData.mplMargin : (student.weightedScore - 60);
+                threshBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i> Below MPL Threshold (${mMargin >= 0 ? '+' : ''}${mMargin}%)`;
             }
         }
 
@@ -679,7 +735,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let barsHtml = '';
         const compKeys = ['Linguistic Proficiency', 'Comprehension Ability', 'Critical Thinking', 'Information Literacy', 'Active Listening'];
         compKeys.forEach(k => {
-            const sc = student.competencies[k] || 0;
+            const sc = (student.competencies && student.competencies[k]) || 0;
             barsHtml += `
                 <div class="p-2.5 bg-light rounded-3 border">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -695,36 +751,43 @@ document.addEventListener("DOMContentLoaded", function() {
         barsContainer.innerHTML = barsHtml;
 
         // Render Radar Chart
-        const rCtx = document.getElementById('detailModalRadarChart');
-        if (rCtx) {
-            if (detailRadarInstance) detailRadarInstance.destroy();
-            detailRadarInstance = new Chart(rCtx.getContext('2d'), {
-                type: 'radar',
-                data: {
-                    labels: ['Linguistic', 'Comprehension', 'Critical Thinking', 'Info Literacy', 'Listening'],
-                    datasets: [{
-                        label: student.name,
-                        data: compKeys.map(k => student.competencies[k] || 0),
-                        backgroundColor: 'rgba(165, 148, 249, 0.25)',
-                        borderColor: '#A594F9',
-                        pointBackgroundColor: '#A594F9',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            min: 0,
-                            max: 100,
-                            ticks: { display: false, stepSize: 25 },
-                            pointLabels: { font: { size: 10 } }
-                        }
+        try {
+            const rCtx = document.getElementById('detailModalRadarChart');
+            if (rCtx && typeof Chart !== 'undefined') {
+                const existingRadar = Chart.getChart ? Chart.getChart(rCtx) : null;
+                if (existingRadar) existingRadar.destroy();
+                else if (detailRadarInstance) detailRadarInstance.destroy();
+
+                detailRadarInstance = new Chart(rCtx.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Linguistic', 'Comprehension', 'Critical Thinking', 'Info Literacy', 'Listening'],
+                        datasets: [{
+                            label: student.name,
+                            data: compKeys.map(k => (student.competencies && student.competencies[k]) || 0),
+                            backgroundColor: 'rgba(165, 148, 249, 0.25)',
+                            borderColor: '#A594F9',
+                            pointBackgroundColor: '#A594F9',
+                            borderWidth: 2
+                        }]
                     },
-                    plugins: { legend: { display: false } }
-                }
-            });
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 100,
+                                ticks: { display: false, stepSize: 25 },
+                                pointLabels: { font: { size: 10 } }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('Radar chart render error:', e);
         }
 
         const modal = new bootstrap.Modal(document.getElementById('studentDetailModal'));
