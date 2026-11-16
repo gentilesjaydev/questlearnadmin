@@ -121,79 +121,86 @@
                         </div>
 
                         <div class="row g-3 mb-4">
-                            <!-- Weighted Scoring KPI -->
+                            <!-- 1. Weighted Scoring KPI -->
                             <div class="col-lg-4 col-md-6">
-                                <div class="p-3.5 rounded-4 bg-light border h-100 d-flex flex-column justify-content-between">
+                                <div class="p-3.5 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between" style="border-top: 3px solid #6366f1 !important;">
                                     <div>
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-uppercase fw-bold text-muted" style="font-size:0.75rem;">1. Weighted Scoring Model</span>
-                                            <span class="badge bg-primary text-white rounded-pill px-2 py-0.5 small">WPS Index</span>
+                                        <div class="d-flex justify-content-between align-items-center mb-2.5">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-1 fw-bold small">
+                                                <i class="fa-solid fa-scale-balanced me-1"></i> 1. Weighted Scoring
+                                            </span>
+                                            <span class="badge bg-light text-muted border px-2 py-0.5 rounded-pill small">WPS Index</span>
                                         </div>
-                                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                                            <h2 class="fw-bolder mb-0 text-dark" id="classWeightedScoreDisplay">--%</h2>
-                                            <span class="text-muted small">vs <span id="classRawAccuracyDisplay" class="fw-bold">--%</span> Raw Acc</span>
+                                        <div class="d-flex align-items-baseline gap-2 mb-1.5">
+                                            <h2 class="fw-bolder mb-0 text-dark display-6" id="classWeightedScoreDisplay">--%</h2>
+                                            <span class="text-muted small">vs <strong id="classRawAccuracyDisplay" class="text-dark">--%</strong> Raw Acc</span>
                                         </div>
-                                        <div class="small text-muted mb-2">
-                                            Weights question complexity: L1 (1.0x), L2 (1.5x), L3 (2.0x), L4 Boss (2.5x).
+                                        <div class="d-flex align-items-center gap-1.5 mb-2">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-0.5 small fw-bold" id="weightedAdjustmentDelta">+0%</span>
+                                            <span class="text-muted" style="font-size: 0.75rem;">Difficulty calibration boost</span>
                                         </div>
                                     </div>
-                                    <div class="pt-2 border-top">
-                                        <div class="d-flex justify-content-between small text-muted">
-                                            <span>Difficulty Calibration Delta:</span>
-                                            <span class="fw-bold text-primary" id="weightedAdjustmentDelta">+0%</span>
+                                    <div class="pt-2.5 border-top">
+                                        <div class="text-muted d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+                                            <span>Difficulty Weights:</span>
+                                            <span class="fw-bold text-dark">L1:1.0x &bull; L2:1.5x &bull; L3:2.0x &bull; L4:2.5x</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Cumulative Threshold Progression -->
+                            <!-- 2. Cumulative Threshold Progression -->
                             <div class="col-lg-4 col-md-6">
-                                <div class="p-3.5 rounded-4 bg-light border h-100 d-flex flex-column justify-content-between">
+                                <div class="p-3.5 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between" style="border-top: 3px solid #10b981 !important;">
                                     <div>
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-uppercase fw-bold text-muted" style="font-size:0.75rem;">2. Cumulative Threshold Progression</span>
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5 small">MPL: 60%</span>
+                                        <div class="d-flex justify-content-between align-items-center mb-2.5">
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1 fw-bold small">
+                                                <i class="fa-solid fa-bullseye me-1"></i> 2. Cumulative Threshold
+                                            </span>
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-0.5 small fw-bold">MPL: 60%</span>
                                         </div>
-                                        <div class="d-flex align-items-baseline gap-2 mb-2">
-                                            <h2 class="fw-bolder mb-0 text-success" id="cohortPassingThresholdPct">--%</h2>
+                                        <div class="d-flex align-items-baseline gap-2 mb-1.5">
+                                            <h2 class="fw-bolder mb-0 text-success display-6" id="cohortPassingThresholdPct">--%</h2>
                                             <span class="text-muted small">Cohort Passing Rate</span>
                                         </div>
-                                        <div class="progress mb-2" style="height: 10px; border-radius: 6px;">
-                                            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" id="cohortThresholdProgressBar" style="width: 0%"></div>
+                                        <div class="progress mb-2" style="height: 6px; border-radius: 999px; background: rgba(16, 185, 129, 0.15);">
+                                            <div class="progress-bar bg-success rounded-pill" role="progressbar" id="cohortThresholdProgressBar" style="width: 0%"></div>
                                         </div>
-                                        <div class="d-flex justify-content-between small text-muted">
-                                            <span>Remediation (&lt;50%)</span>
-                                            <span class="fw-bold text-primary">Passing (60%)</span>
+                                        <div class="d-flex justify-content-between text-muted mb-2" style="font-size: 0.7rem;">
+                                            <span>Recall (50%)</span>
+                                            <span class="text-success fw-bold">DepEd MPL (60%)</span>
                                             <span>Mastery (75%)</span>
                                         </div>
                                     </div>
-                                    <div class="pt-2 border-top">
-                                        <div class="d-flex justify-content-between small text-muted">
-                                            <span>Threshold-Cleared Learners:</span>
-                                            <span class="fw-bold text-dark" id="cohortThresholdClearedRatio">0 / 0</span>
+                                    <div class="pt-2.5 border-top">
+                                        <div class="d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+                                            <span class="text-muted">Threshold-Cleared Learners:</span>
+                                            <span class="fw-bold text-success" id="cohortThresholdClearedRatio">0 / 0</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Performance Thread & Adaptive Remediation -->
+                            <!-- 3. Performance Thread & Remediation -->
                             <div class="col-lg-4 col-md-12">
-                                <div class="p-3.5 rounded-4 bg-light border h-100 d-flex flex-column justify-content-between">
+                                <div class="p-3.5 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between" style="border-top: 3px solid #f59e0b !important;">
                                     <div>
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-uppercase fw-bold text-muted" style="font-size:0.75rem;">3. Performance Thread & Remediation</span>
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2 py-0.5 small">Adaptive Trace</span>
+                                        <div class="d-flex justify-content-between align-items-center mb-2.5">
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1 fw-bold small">
+                                                <i class="fa-solid fa-route me-1"></i> 3. Performance Thread
+                                            </span>
+                                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-0.5 small fw-bold">Deficit Detected</span>
                                         </div>
-                                        <div class="d-flex align-items-baseline gap-2 mb-1">
+                                        <div class="mb-1">
                                             <h5 class="fw-bolder mb-0 text-dark" id="primaryClassBottleneckText">Analyzing...</h5>
                                         </div>
-                                        <small class="text-danger d-block mb-2" id="primaryClassBottleneckSub">Identified primary class competency deficit</small>
-                                        <p class="small text-muted mb-2">
+                                        <small class="text-danger fw-semibold d-block mb-2" id="primaryClassBottleneckSub" style="font-size: 0.75rem;">Identified primary class competency deficit</small>
+                                        <p class="text-muted mb-2" style="font-size: 0.72rem; line-height: 1.35;">
                                             Evaluation thread automatically routes learners with threshold deficits into targeted remedial practice.
                                         </p>
                                     </div>
-                                    <div class="pt-2 border-top">
-                                        <button onclick="document.getElementById('aiInsightsBtn').click()" class="btn btn-sm btn-outline-primary w-100 rounded-pill fw-bold">
+                                    <div class="pt-2.5 border-top">
+                                        <button onclick="document.getElementById('aiInsightsBtn').click()" class="btn btn-sm btn-outline-primary w-100 rounded-pill fw-bold py-1.5 shadow-sm" style="font-size: 0.8rem;">
                                             <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Trigger Adaptive Remediation
                                         </button>
                                     </div>
@@ -201,20 +208,21 @@
                             </div>
                         </div>
 
-                        <!-- Performance Trend Line Chart (Attempts & Progression Timeline) -->
-                        <div class="border rounded-4 p-3 bg-white">
-                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                        <!-- Performance Trend Line Chart (Clean & Unified) -->
+                        <div class="border rounded-4 p-3.5 bg-white shadow-sm">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="badge bg-primary bg-opacity-10 text-primary p-2 rounded-3"><i class="fa-solid fa-chart-line"></i></span>
-                                    <h6 class="fw-bold text-dark mb-0 text-uppercase" style="letter-spacing:0.5px; font-size: 0.85rem;">Cohort Performance Trend & Milestone Progression</h6>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">Cohort Performance Trend & Milestone Progression</h6>
+                                        <small class="text-muted" style="font-size: 0.72rem;">Tracking cumulative weighted scores against DepEd standards across all 4 cognitive stages</small>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-3 small flex-wrap">
-                                    <span class="text-muted"><i class="fa-solid fa-circle text-primary me-1" style="font-size:0.6rem;"></i>Weighted Score Trend</span>
-                                    <span class="text-muted"><i class="fa-solid fa-circle text-secondary me-1" style="font-size:0.6rem;"></i>Raw Accuracy</span>
-                                    <span class="text-success fw-bold"><i class="fa-solid fa-minus me-1"></i>60% Passing Benchmark</span>
-                                </div>
+                                <span class="badge bg-light text-muted border px-2.5 py-1 rounded-pill small">
+                                    <i class="fa-solid fa-clock-rotate-left me-1"></i> Real-Time Diagnostic Feed
+                                </span>
                             </div>
-                            <div style="position: relative; height: 200px;">
+                            <div style="position: relative; height: 250px;">
                                 <canvas id="performanceTrendChart"></canvas>
                             </div>
                         </div>

@@ -764,36 +764,42 @@ document.addEventListener("DOMContentLoaded", function() {
                                 labels: ['Stage 1: Level 1 (Recall)', 'Stage 2: Level 2 (Apply)', 'Stage 3: Level 3 (Evaluate)', 'Stage 4: Level 4 (Boss/Create)'],
                                 datasets: [
                                     {
-                                        label: 'Cohort Cumulative Progression (WPS %)',
+                                        label: 'Cohort WPS Progression',
                                         data: [avgM1, avgM2, avgM3, avgM4],
                                         borderColor: '#6366f1',
-                                        backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                                        backgroundColor: 'rgba(99, 102, 241, 0.08)',
                                         fill: true,
                                         tension: 0.35,
                                         borderWidth: 3,
                                         pointRadius: 5,
                                         pointHoverRadius: 7,
-                                        pointBackgroundColor: '#6366f1'
+                                        pointBackgroundColor: '#ffffff',
+                                        pointBorderColor: '#6366f1',
+                                        pointBorderWidth: 2
                                     },
                                     {
-                                        label: 'Stage Raw Accuracy (%)',
+                                        label: 'Raw Diagnostic Accuracy',
                                         data: [avgL1, avgL2, avgL3, avgL4],
                                         borderColor: '#94a3b8',
                                         borderDash: [5, 5],
                                         tension: 0.35,
                                         borderWidth: 2,
                                         pointRadius: 4,
-                                        pointBackgroundColor: '#94a3b8',
+                                        pointBackgroundColor: '#ffffff',
+                                        pointBorderColor: '#94a3b8',
+                                        pointBorderWidth: 2,
                                         fill: false
                                     },
                                     {
-                                        label: 'Progression Threshold Gates (50% / 55% / 60% / 75%)',
+                                        label: 'DepEd Passing Gates',
                                         data: [50, 55, 60, 75],
                                         borderColor: '#10b981',
                                         borderDash: [3, 3],
                                         borderWidth: 2,
                                         pointRadius: 4,
-                                        pointBackgroundColor: '#10b981',
+                                        pointBackgroundColor: '#ffffff',
+                                        pointBorderColor: '#10b981',
+                                        pointBorderWidth: 2,
                                         fill: false
                                     }
                                 ]
@@ -808,9 +814,18 @@ document.addEventListener("DOMContentLoaded", function() {
                                 plugins: {
                                     legend: {
                                         position: 'top',
-                                        labels: { boxWidth: 14, font: { size: 11, weight: 'bold' } }
+                                        align: 'end',
+                                        labels: {
+                                            boxWidth: 8,
+                                            boxHeight: 8,
+                                            usePointStyle: true,
+                                            padding: 16,
+                                            font: { size: 11, weight: '600', family: "'Inter', sans-serif" }
+                                        }
                                     },
                                     tooltip: {
+                                        padding: 10,
+                                        cornerRadius: 8,
                                         callbacks: {
                                             label: function(context) {
                                                 return ` ${context.dataset.label}: ${context.parsed.y}%`;
@@ -823,12 +838,15 @@ document.addEventListener("DOMContentLoaded", function() {
                                         beginAtZero: true,
                                         max: 100,
                                         ticks: {
-                                            callback: function(value) { return value + '%'; }
+                                            stepSize: 20,
+                                            callback: function(value) { return value + '%'; },
+                                            font: { size: 11 }
                                         },
-                                        grid: { color: 'rgba(0,0,0,0.05)' }
+                                        grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }
                                     },
                                     x: {
-                                        grid: { display: false }
+                                        grid: { display: false, drawBorder: false },
+                                        ticks: { font: { size: 11, weight: '500' } }
                                     }
                                 }
                             }
