@@ -97,41 +97,6 @@
 
                 <!-- Main Data Dashboards -->
                 <div class="row g-4 mb-4">
-                    <!-- Leaderboard Chart -->
-                    <div class="col-lg-8">
-                        <div class="card dashboard-card h-100 p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div>
-                                    <h5 class="mb-1">XP Leaderboard Tracker</h5>
-                                    <p class="text-muted small mb-0">Top performing students across all modes</p>
-                                </div>
-                                <select class="form-select form-select-sm w-auto shadow-none text-muted fw-medium rounded-3">
-                                    <option>Last 7 Days</option>
-                                    <option>Last 30 Days</option>
-                                </select>
-                            </div>
-                            <div class="p-2" style="position: relative; height: 320px; width: 100%;">
-                                <canvas id="performanceChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Distribution Chart -->
-                    <div class="col-lg-4">
-                        <div class="card dashboard-card h-100 p-4">
-                            <div class="mb-4">
-                                <h5 class="mb-1">Class Level Distribution</h5>
-                                <p class="text-muted small mb-0">Student breakdown by RPG level</p>
-                            </div>
-                            <div class="p-2" style="position: relative; height: 320px; width: 100%; display: flex; justify-content: center; align-items: center;">
-                                <canvas id="distributionChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Secondary Data Row: Live Student Activity Feed -->
-                <div class="row g-4 mb-4">
 
                     <!-- NATG6 Proficiency Distribution -->
                     <div class="col-12">
@@ -221,7 +186,7 @@
                                         <div class="card border-0 rounded-4 p-3 h-100 text-center" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
                                             <small class="fw-bold text-uppercase mb-1 text-success" style="font-size: 0.68rem;">MPL Cleared (&ge; 60%)</small>
                                             <h3 class="fw-bolder text-success mb-0" id="dash_mplPassRate">0%</h3>
-                                            <small class="text-muted" style="font-size: 0.72rem;" id="dash_mplPassRatio">0/0 students</small>
+                                            <small class="text-muted" style="font-size: 0.72rem;" id="dash_mplPassRatio">0/0 cleared</small>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
@@ -239,6 +204,38 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Chart -->
+                    <div class="col-lg-8">
+                        <div class="card dashboard-card h-100 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h5 class="mb-1">XP Leaderboard Tracker</h5>
+                                    <p class="text-muted small mb-0">Top performing students across all modes</p>
+                                </div>
+                                <select class="form-select form-select-sm w-auto shadow-none text-muted fw-medium rounded-3">
+                                    <option>Last 7 Days</option>
+                                    <option>Last 30 Days</option>
+                                </select>
+                            </div>
+                            <div class="p-2" style="position: relative; height: 320px; width: 100%;">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Distribution Chart -->
+                    <div class="col-lg-4">
+                        <div class="card dashboard-card h-100 p-4">
+                            <div class="mb-4">
+                                <h5 class="mb-1">Class Level Distribution</h5>
+                                <p class="text-muted small mb-0">Student breakdown by RPG level</p>
+                            </div>
+                            <div class="p-2" style="position: relative; height: 320px; width: 100%; display: flex; justify-content: center; align-items: center;">
+                                <canvas id="distributionChart"></canvas>
                             </div>
                         </div>
                     </div>
