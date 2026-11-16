@@ -35,7 +35,7 @@
                         <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold mb-3 border border-primary border-opacity-25">
                             <i class="fa-solid fa-bolt me-1"></i> Live Metrics
                         </div>
-                        <h2 class="mb-2">Analytics Overview</h2>
+                        <h2 class="mb-2">Dashboard Overview</h2>
                         <p class="text-muted mb-0">Monitor student performance and game engagement in real-time.</p>
                     </div>
                     <button onclick="generateReport()" class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 shadow-sm">

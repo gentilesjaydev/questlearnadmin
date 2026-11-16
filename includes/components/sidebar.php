@@ -12,7 +12,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <ul class="list-unstyled components">
         <li class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
-            <a href="<?php echo $base; ?>index"><i class="fa-solid fa-chart-line"></i> Analytics Dashboard</a>
+            <a href="<?php echo $base; ?>index"><i class="fa-solid fa-chart-line"></i> Dashboard Overview</a>
         </li>
         <?php 
         $is_student_active = in_array($current_page, ['students.php']);
