@@ -102,6 +102,63 @@ function initDashboard() {
             document.getElementById('activeQuestsStat').innerText = '0';
         }
     }).catch(err => console.error("Error fetching quests:", err));
+
+    // 3. Fetch firstAttempts for Performance Analytics Summary (proficiency tiers + WPS)
+    db.ref('users').once('value').then(snap => {
+        if (!snap.exists()) return;
+        const WEIGHTS = { 1: 1.0, 2: 1.5, 3: 2.0, 4: 2.5 };
+        let assessed = 0, mastered = 0, proficient = 0, developing = 0, needsSupport = 0;
+        let totalWps = 0, mplCleared = 0;
+
+        snap.forEach(child => {
+            const data = child.val();
+            if (data.role && data.role !== 'student') return;
+            const fa = data.firstAttempts;
+            if (!fa) return;
+
+            let wNum = 0, wDen = 0, totalCorrect = 0, totalQ = 0;
+            Object.values(fa).forEach(att => {
+                const lvl = parseInt(att.level) || 1;
+                const correct = parseInt(att.correctAnswers) || 0;
+                const total = parseInt(att.totalQuestions) || 0;
+                if (total === 0) return;
+                const w = WEIGHTS[lvl] || 1.0;
+                wNum += (correct / total) * w;
+                wDen += w;
+                totalCorrect += correct;
+                totalQ += total;
+            });
+            if (wDen === 0 || totalQ === 0) return;
+
+            const wps = Math.round((wNum / wDen) * 100);
+            const rawAcc = Math.round((totalCorrect / totalQ) * 100);
+            assessed++;
+            totalWps += wps;
+            if (rawAcc >= 60) mplCleared++;
+            if (rawAcc >= 75) mastered++;
+            else if (rawAcc >= 60) proficient++;
+            else if (rawAcc >= 50) developing++;
+            else needsSupport++;
+        });
+
+        const pct = n => assessed > 0 ? Math.round((n / assessed) * 100) + '% of cohort' : '0% of cohort';
+        const avgWps = assessed > 0 ? Math.round(totalWps / assessed) : 0;
+        const mplPct = assessed > 0 ? Math.round((mplCleared / assessed) * 100) : 0;
+        const atRiskPct = assessed > 0 ? Math.round(((assessed - mplCleared) / assessed) * 100) : 0;
+
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('dashTierMastered', mastered);
+        set('dashTierMasteredPct', pct(mastered));
+        set('dashTierProficient', proficient);
+        set('dashTierProficientPct', pct(proficient));
+        set('dashTierDeveloping', developing);
+        set('dashTierDevelopingPct', pct(developing));
+        set('dashTierNeedsSupport', needsSupport);
+        set('dashTierNeedsSupportPct', pct(needsSupport));
+        set('dashAvgWps', avgWps + '%');
+        set('dashMplCleared', mplCleared + ' / ' + assessed + ' (' + mplPct + '%)');
+        set('dashAtRiskPct', (assessed - mplCleared) + ' students (' + atRiskPct + '%)');
+    }).catch(err => console.error("Error fetching performance analytics summary:", err));
 }
 
 // Chart.js Default styling overrides for professional look
