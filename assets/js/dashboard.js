@@ -157,8 +157,8 @@ function initDashboard() {
             let atRiskWpsCount = 0;
 
             globalStats.forEach(s => {
-                const wps = calculateWeightedProficiency(s.rawStudent, s, s.accuracy);
-                const thresh = calculateCumulativeThresholdProgression(s.rawStudent, wps);
+                const wps = calculateWeightedProficiency(s);
+                const thresh = calculateCumulativeThresholdProgression(s, wps);
                 s.weightedScore = wps.weightedScore;
 
                 if (s.totalAnswered > 0) {
@@ -389,112 +389,152 @@ function extractStudentFirstAttemptStats(student) {
     return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, retryCount: 0, categories: {} };
 }
 
-// Helper: Calculate Weighted Proficiency Score (WPS)
-function calculateWeightedProficiency(student, faStats, overallAccuracy) {
-    if (!student || (faStats && faStats.totalAnswers === 0) || overallAccuracy === 0) {
+// Canonical Helper: Calculate Weighted Proficiency Score (WPS) — identical to performance.js
+function calculateWeightedProficiency(studentObj) {
+    const weights = [
+        { level: 1, name: 'Level 1 (Easy)', domain: 'Remembering & Understanding', weight: 1.0 },
+        { level: 2, name: 'Level 2 (Medium)', domain: 'Applying & Analyzing', weight: 1.5 },
+        { level: 3, name: 'Level 3 (Hard)', domain: 'Evaluating & Inference', weight: 2.0 },
+        { level: 4, name: 'Level 4 (Boss)', domain: 'Creating & Synthesis', weight: 2.5 }
+    ];
+
+    const sTotal = (studentObj.totalAnswered !== undefined ? studentObj.totalAnswered : (studentObj.gameStats ? studentObj.gameStats.totalAnswers : 0)) || 0;
+    const sCorrect = (studentObj.correctAnswers !== undefined ? studentObj.correctAnswers : (studentObj.gameStats ? studentObj.gameStats.totalCorrect : 0)) || 0;
+    const rawAccuracy = sTotal > 0 ? Math.round((sCorrect / sTotal) * 100) : 0;
+
+    if (sTotal === 0) {
         return {
+            rawAccuracy: 0,
             weightedScore: 0,
-            levelDetails: [
-                { level: 1, weight: 1.0, accuracy: 0 },
-                { level: 2, weight: 1.5, accuracy: 0 },
-                { level: 3, weight: 2.0, accuracy: 0 },
-                { level: 4, weight: 2.5, accuracy: 0 }
-            ]
+            adjustmentDelta: 0,
+            hasData: false,
+            breakdown: weights.map(w => ({ ...w, correct: 0, total: 0, accuracy: 0, contribution: 0 }))
         };
     }
 
-    const levelData = {
-        1: { weight: 1.0, total: 0, correct: 0 },
-        2: { weight: 1.5, total: 0, correct: 0 },
-        3: { weight: 2.0, total: 0, correct: 0 },
-        4: { weight: 2.5, total: 0, correct: 0 }
+    let levelStats = {
+        1: { correct: 0, total: 0 },
+        2: { correct: 0, total: 0 },
+        3: { correct: 0, total: 0 },
+        4: { correct: 0, total: 0 }
     };
 
-    let hasSpecificLevelTelemetry = false;
-    if (student.firstAttempts && typeof student.firstAttempts === 'object') {
-        Object.values(student.firstAttempts).forEach(attempt => {
-            if (attempt && typeof attempt === 'object') {
-                const lvl = Number(attempt.level || attempt.stage || attempt.difficultyLevel || 1);
-                const targetLvl = (lvl >= 1 && lvl <= 4) ? lvl : ((lvl > 4) ? 4 : 1);
-                const tot = Number(attempt.totalQuestions || attempt.total || attempt.questionsAnswered || 0);
-                const corr = Number(attempt.correctAnswers || attempt.score || attempt.correct || 0);
-                if (tot > 0) {
-                    levelData[targetLvl].total += tot;
-                    levelData[targetLvl].correct += corr;
-                    hasSpecificLevelTelemetry = true;
-                }
+    const scanObj = studentObj.firstAttempts || (studentObj.rawStudent && studentObj.rawStudent.firstAttempts);
+    let hasDirectLevels = false;
+    if (scanObj && typeof scanObj === 'object') {
+        Object.values(scanObj).forEach(att => {
+            if (!att) return;
+            const lvl = parseInt(att.level || att.questLevel || att.levelId || 0);
+            if (lvl >= 1 && lvl <= 4) {
+                hasDirectLevels = true;
+                const tot = att.totalQuestions || ((att.totalCorrect || 0) + (att.totalWrong || 0)) || 1;
+                const cor = att.totalCorrect || att.correct || 0;
+                levelStats[lvl].correct += cor;
+                levelStats[lvl].total += tot;
             }
         });
     }
 
-    if (!hasSpecificLevelTelemetry) {
-        levelData[1].accuracy = Math.min(100, Math.round(overallAccuracy * 1.08));
-        levelData[2].accuracy = Math.min(100, Math.round(overallAccuracy * 1.0));
-        levelData[3].accuracy = Math.min(100, Math.round(overallAccuracy * 0.92));
-        levelData[4].accuracy = Math.min(100, Math.round(overallAccuracy * 0.85));
-    } else {
-        for (let l = 1; l <= 4; l++) {
-            if (levelData[l].total > 0) {
-                levelData[l].accuracy = Math.round((levelData[l].correct / levelData[l].total) * 100);
-            } else {
-                const fallbacks = [overallAccuracy * 1.05, overallAccuracy, overallAccuracy * 0.9, overallAccuracy * 0.8];
-                levelData[l].accuracy = Math.min(100, Math.round(fallbacks[l - 1]));
-            }
-        }
+    if (!hasDirectLevels) {
+        const l1Acc = Math.min(100, Math.round(rawAccuracy * 1.10));
+        const l2Acc = Math.round(rawAccuracy * 1.00);
+        const l3Acc = Math.max(0, Math.round(rawAccuracy * 0.90));
+        const l4Acc = Math.max(0, Math.round(rawAccuracy * 0.76));
+
+        const qPerLvl = Math.max(1, Math.round(sTotal / 4));
+        levelStats[1] = { correct: Math.min(qPerLvl, Math.round(qPerLvl * (l1Acc / 100))), total: qPerLvl };
+        levelStats[2] = { correct: Math.min(qPerLvl, Math.round(qPerLvl * (l2Acc / 100))), total: qPerLvl };
+        levelStats[3] = { correct: Math.min(qPerLvl, Math.round(qPerLvl * (l3Acc / 100))), total: qPerLvl };
+        levelStats[4] = { correct: Math.min(qPerLvl, Math.round(qPerLvl * (l4Acc / 100))), total: qPerLvl };
     }
 
-    let numerator = 0;
-    let denominator = 0;
-    const details = [];
+    let totalWeightedProduct = 0;
+    let totalWeightSum = 0;
 
-    for (let l = 1; l <= 4; l++) {
-        const acc = levelData[l].accuracy;
-        const w = levelData[l].weight;
-        numerator += (acc * w);
-        denominator += w;
-        details.push({ level: l, weight: w, accuracy: acc });
-    }
+    const breakdown = weights.map(w => {
+        const st = levelStats[w.level] || { correct: 0, total: 0 };
+        const acc = st.total > 0 ? Math.round((st.correct / st.total) * 100) : rawAccuracy;
+        const weightedPoints = (acc * w.weight);
+        totalWeightedProduct += weightedPoints;
+        totalWeightSum += w.weight;
+        return {
+            level: w.level,
+            name: w.name,
+            domain: w.domain,
+            weight: w.weight,
+            correct: st.correct,
+            total: st.total,
+            accuracy: acc,
+            weightedPoints: Math.round(weightedPoints * 10) / 10
+        };
+    });
+
+    const weightedScore = totalWeightSum > 0 ? Math.round(totalWeightedProduct / totalWeightSum) : rawAccuracy;
+    const delta = weightedScore - rawAccuracy;
 
     return {
-        weightedScore: Math.round(numerator / denominator),
-        levelDetails: details
+        rawAccuracy: rawAccuracy,
+        weightedScore: weightedScore,
+        adjustmentDelta: delta,
+        hasData: true,
+        breakdown: breakdown
     };
 }
 
-// Helper: Cumulative Threshold Progression calculation
-function calculateCumulativeThresholdProgression(student, wpsData) {
-    const stageGates = [
-        { stage: 1, threshold: 50 },
-        { stage: 2, threshold: 55 },
-        { stage: 3, threshold: 60 },
-        { stage: 4, threshold: 75 }
+// Canonical Helper: Cumulative Threshold Progression calculation — identical to performance.js
+function calculateCumulativeThresholdProgression(studentObj, wpsData) {
+    const wps = wpsData || calculateWeightedProficiency(studentObj);
+    const sTotal = (studentObj.totalAnswered !== undefined ? studentObj.totalAnswered : (studentObj.gameStats ? studentObj.gameStats.totalAnswers : 0)) || 0;
+
+    const stages = [
+        { stage: 1, label: 'Stage 1 (L1 Baseline)', threshold: 50, desc: 'Foundational Knowledge Gate' },
+        { stage: 2, label: 'Stage 2 (L1+L2 Cumulative)', threshold: 55, desc: 'Functional Application Gate' },
+        { stage: 3, label: 'Stage 3 (L1-L3 Cumulative)', threshold: 60, desc: 'DepEd MPL Passing Benchmark' },
+        { stage: 4, label: 'Stage 4 (Comprehensive L1-L4)', threshold: 75, desc: 'Advanced Mastery Benchmark' }
     ];
 
-    let runningWeightSum = 0;
-    let runningScoreSum = 0;
-    const milestones = [];
+    if (sTotal === 0 || !wps.hasData) {
+        return {
+            hasData: false,
+            finalScore: 0,
+            hasPassedMPL: false,
+            statusLabel: 'Not Started',
+            statusBadgeClass: 'bg-secondary',
+            stages: stages.map(s => ({ ...s, cumulativeScore: 0, passed: false, margin: -s.threshold }))
+        };
+    }
 
-    wpsData.levelDetails.forEach((ld, idx) => {
-        runningWeightSum += ld.weight;
-        runningScoreSum += (ld.accuracy * ld.weight);
-        const cumulativeAvg = Math.round(runningScoreSum / runningWeightSum);
-        const gate = stageGates[idx];
-        const isCleared = cumulativeAvg >= gate.threshold;
+    let runningCorrect = 0;
+    let runningTotal = 0;
+    const stageResults = [];
 
-        milestones.push({
-            stage: gate.stage,
-            threshold: gate.threshold,
-            cumulativeScore: cumulativeAvg,
-            isCleared: isCleared
+    wps.breakdown.forEach((b, idx) => {
+        runningCorrect += b.correct;
+        runningTotal += b.total;
+        const cumScore = runningTotal > 0 ? Math.round((runningCorrect / runningTotal) * 100) : b.accuracy;
+        const stDef = stages[idx] || { stage: idx + 1, label: `Stage ${idx+1}`, threshold: 60 };
+        const margin = cumScore - stDef.threshold;
+        stageResults.push({
+            stage: stDef.stage,
+            label: stDef.label,
+            desc: stDef.desc,
+            threshold: stDef.threshold,
+            cumulativeScore: cumScore,
+            passed: cumScore >= stDef.threshold,
+            margin: margin
         });
     });
 
-    const mplGate = milestones[2]; // Milestone 3 (DepEd 60%)
-    const hasPassedMPL = mplGate ? mplGate.isCleared : (wpsData.weightedScore >= 60);
+    const finalScore = wps.weightedScore;
+    const hasPassedMPL = finalScore >= 60;
 
     return {
+        hasData: true,
+        finalScore: finalScore,
+        rawAccuracy: wps.rawAccuracy,
         hasPassedMPL: hasPassedMPL,
-        milestones: milestones
+        mplMargin: finalScore - 60,
+        stages: stageResults
     };
 }
 
