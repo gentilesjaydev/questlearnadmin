@@ -70,6 +70,45 @@
                     </div>
                 </div>
 
+                <!-- Summary Overview Banner -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 px-4 py-4" style="background: linear-gradient(135deg, #f8f7ff 0%, #fff 60%);">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 mb-2 d-inline-flex align-items-center gap-1" style="font-size: 0.75rem; font-weight: 700;">
+                                <i class="fa-solid fa-bolt" style="font-size: 0.65rem;"></i> Live Metrics
+                            </span>
+                            <h4 class="fw-bolder mb-1" style="color: var(--text-main); letter-spacing: -0.5px;">Competency Tracking Overview</h4>
+                            <p class="text-muted mb-0 small">Monitor individual mastery, weighted proficiency scores, and threshold progression across all Grade 6 learners.</p>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3 bg-white border shadow-sm">
+                                <i class="fa-solid fa-users text-primary"></i>
+                                <div>
+                                    <div class="fw-bolder lh-1" id="overviewTotalStudents" style="font-size: 1.1rem; color: var(--text-main);">0</div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">Total Learners</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3 bg-white border shadow-sm">
+                                <i class="fa-solid fa-award text-success"></i>
+                                <div>
+                                    <div class="fw-bolder lh-1" id="overviewCompetentCount" style="font-size: 1.1rem; color: #10b981;">0</div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">Competent</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3 bg-white border shadow-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                                <div>
+                                    <div class="fw-bolder lh-1" id="overviewAtRiskCount" style="font-size: 1.1rem; color: #ef4444;">0</div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">At-Risk</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary px-3 py-2 d-flex align-items-center gap-2" onclick="window.print()" style="font-size: 0.85rem; border-radius: 10px;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> Download Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Competency KPI Status Cards -->
                 <div class="row g-3 mb-4">
                     <div class="col-6 col-md-4 col-lg-2">

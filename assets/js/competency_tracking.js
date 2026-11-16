@@ -461,14 +461,21 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('statCompetentCount').textContent = competent;
         document.getElementById('statCompetentPct').textContent = total > 0 ? `${Math.round((competent/total)*100)}% of cohort` : '0%';
 
-        document.getElementById('statInProgressCount').textContent = inProgress;
-        document.getElementById('statInProgressPct').textContent = total > 0 ? `${Math.round((inProgress/total)*100)}% of cohort` : '0%';
+        // Guard legacy elements (may not exist in updated HTML)
+        const elInProg = document.getElementById('statInProgressCount');
+        if (elInProg) { elInProg.textContent = inProgress; const p = document.getElementById('statInProgressPct'); if(p) p.textContent = total > 0 ? `${Math.round((inProgress/total)*100)}% of cohort` : '0%'; }
+        const elNeedsImp = document.getElementById('statNeedsImprovementCount');
+        if (elNeedsImp) { elNeedsImp.textContent = needsImprovement; const p = document.getElementById('statNeedsImprovementPct'); if(p) p.textContent = total > 0 ? `${Math.round((needsImprovement/total)*100)}% of cohort` : '0%'; }
+        const elNotYet = document.getElementById('statNotYetCompetentCount');
+        if (elNotYet) { elNotYet.textContent = notYetCompetent; const p = document.getElementById('statNotYetCompetentPct'); if(p) p.textContent = total > 0 ? `${Math.round((notYetCompetent/total)*100)}% of cohort` : '0%'; }
 
-        document.getElementById('statNeedsImprovementCount').textContent = needsImprovement;
-        document.getElementById('statNeedsImprovementPct').textContent = total > 0 ? `${Math.round((needsImprovement/total)*100)}% of cohort` : '0%';
-
-        document.getElementById('statNotYetCompetentCount').textContent = notYetCompetent;
-        document.getElementById('statNotYetCompetentPct').textContent = total > 0 ? `${Math.round((notYetCompetent/total)*100)}% of cohort` : '0%';
+        // Update summary overview banner
+        const ovTotal = document.getElementById('overviewTotalStudents');
+        const ovCompetent = document.getElementById('overviewCompetentCount');
+        const ovAtRisk = document.getElementById('overviewAtRiskCount');
+        if (ovTotal) ovTotal.textContent = total.toLocaleString();
+        if (ovCompetent) ovCompetent.textContent = competent;
+        if (ovAtRisk) ovAtRisk.textContent = atRiskCount;
     }
 
     // Update Cohort Competency Bar Chart
