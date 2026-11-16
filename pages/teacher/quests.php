@@ -42,7 +42,7 @@
                             <label class="form-check-label ms-2 fw-bold text-muted" for="selectAllCheckbox" style="cursor: pointer; padding-top: 2px;">Select All</label>
                         </div>
                         <button class="btn btn-outline-primary px-3 py-2 d-flex align-items-center gap-2 bg-white" data-bs-toggle="modal" data-bs-target="#aiGeneratorModal">
-                            <i class="fa-solid fa-cloud-arrow-up text-primary"></i> Upload Module to Generate with AI
+                            <i class="fa-solid fa-cloud-arrow-up text-primary"></i> Upload & Generate
                         </button>
                         <button class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2" id="addQuestBtn">
                             <i class="fa-solid fa-plus"></i> Add Question
