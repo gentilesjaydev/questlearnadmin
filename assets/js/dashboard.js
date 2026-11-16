@@ -95,6 +95,7 @@ function initDashboard() {
     // 2. Fetch Quest Categories (Gamified Data)
     db.ref('quests').once('value').then((snapshot) => {
         if (snapshot.exists()) {
+            // Count the number of active game categories (grammar, vocabulary, etc.)
             const categoryCount = snapshot.numChildren();
             document.getElementById('activeQuestsStat').innerText = categoryCount.toLocaleString();
         } else {
@@ -102,96 +103,96 @@ function initDashboard() {
         }
     }).catch(err => console.error("Error fetching quests:", err));
 
-    // 3. Performance Analytics Summary — same extraction logic as performance.js
-    db.ref('users').once('value').then(snap => {
-        if (!snap.exists()) return;
+    // 3. Fetch firstAttempts for Proficiency Distribution & Performance Analytics Summary
+    db.ref('users').once('value').then(usersSnap => {
+        if (!usersSnap.exists()) return;
+
         const WEIGHTS = { 1: 1.0, 2: 1.5, 3: 2.0, 4: 2.5 };
-        let assessed = 0, mastered = 0, proficient = 0, developing = 0, needsSupport = 0;
-        let totalWps = 0, mplCleared = 0;
+        let allStudentMetrics = [];
 
-        snap.forEach(child => {
-            const student = child.val();
-            if (student.role && student.role !== 'student') return;
-
-            let totalCorrect = 0, totalAnswers = 0;
-
-            // Priority 1: use pre-aggregated firstAttemptStats (same as performance.js)
-            if (student.firstAttemptStats &&
-                (student.firstAttemptStats.totalAnswers > 0 || student.firstAttemptStats.totalCorrect > 0)) {
-                totalCorrect = Number(student.firstAttemptStats.totalCorrect) || 0;
-                totalAnswers = Number(student.firstAttemptStats.totalAnswers) || 0;
-
-            // Priority 2: derive from gameHistory firstClear events
-            } else if (student.gameHistory && typeof student.gameHistory === 'object') {
-                const levelClears = {};
-                Object.values(student.gameHistory)
-                    .filter(e => e && typeof e === 'object')
-                    .sort((a, b) => (Number(a.at || a.timestamp) || 0) - (Number(b.at || b.timestamp) || 0))
-                    .forEach(e => {
-                        if (e.event !== 'level_complete') return;
-                        const key = `${e.category||''}__${e.level||''}`;
-                        if (!levelClears[key]) {
-                            levelClears[key] = true;
-                            totalCorrect += Number(e.correctAnswers || e.correct || 0);
-                            totalAnswers += Number(e.totalQuestions || e.total || 0);
+        const promises = [];
+        usersSnap.forEach(child => {
+            const data = child.val();
+            if (data.role === 'student' || !data.role) {
+                promises.push(
+                    db.ref(`users/${child.key}/firstAttempts`).once('value').then(faSnap => {
+                        let totalWeighted = 0, totalWeight = 0, totalCorrect = 0, totalQ = 0;
+                        if (faSnap.exists()) {
+                            faSnap.forEach(attempt => {
+                                const a = attempt.val();
+                                const lvl = parseInt(a.level) || 1;
+                                const correct = parseInt(a.correctAnswers) || 0;
+                                const total = parseInt(a.totalQuestions) || 0;
+                                if (total > 0) {
+                                    const acc = correct / total;
+                                    const w = WEIGHTS[lvl] || 1.0;
+                                    totalWeighted += acc * w;
+                                    totalWeight += w;
+                                    totalCorrect += correct;
+                                    totalQ += total;
+                                }
+                            });
                         }
-                    });
-
-            // Priority 3: raw firstAttempts records
-            } else if (student.firstAttempts && typeof student.firstAttempts === 'object') {
-                Object.values(student.firstAttempts).forEach(att => {
-                    totalCorrect += Number(att.correctAnswers || 0);
-                    totalAnswers += Number(att.totalQuestions || 0);
-                });
+                        if (totalQ === 0) return; // skip students with no attempts
+                        const rawAcc = Math.round((totalCorrect / totalQ) * 100);
+                        const wps = totalWeight > 0 ? Math.round((totalWeighted / totalWeight) * 100) : rawAcc;
+                        allStudentMetrics.push({ rawAcc, wps });
+                    })
+                );
             }
-
-            if (totalAnswers === 0) return;
-
-            const rawAcc = Math.round((totalCorrect / totalAnswers) * 100);
-
-            // WPS: use level-specific weights from firstAttempts if available
-            let wNum = 0, wDen = 0;
-            if (student.firstAttempts && typeof student.firstAttempts === 'object') {
-                Object.values(student.firstAttempts).forEach(att => {
-                    const lvl = parseInt(att.level) || 1;
-                    const c = Number(att.correctAnswers || 0);
-                    const t = Number(att.totalQuestions || 0);
-                    if (t === 0) return;
-                    const w = WEIGHTS[lvl] || 1.0;
-                    wNum += (c / t) * w;
-                    wDen += w;
-                });
-            }
-            const wps = wDen > 0 ? Math.round((wNum / wDen) * 100) : rawAcc;
-
-            assessed++;
-            totalWps += wps;
-            if (rawAcc >= 60) mplCleared++;
-            if (rawAcc >= 75) mastered++;
-            else if (rawAcc >= 60) proficient++;
-            else if (rawAcc >= 50) developing++;
-            else needsSupport++;
         });
 
-        const pct = n => assessed > 0 ? Math.round((n / assessed) * 100) + '% of cohort' : '0% of cohort';
-        const avgWps    = assessed > 0 ? Math.round(totalWps / assessed) : 0;
-        const mplPct    = assessed > 0 ? Math.round((mplCleared / assessed) * 100) : 0;
-        const atRiskCnt = assessed - mplCleared;
-        const atRiskPct = assessed > 0 ? Math.round((atRiskCnt / assessed) * 100) : 0;
+        Promise.all(promises).then(() => {
+            const total = allStudentMetrics.length;
+            if (total === 0) return;
 
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('dashTierMastered',        mastered);
-        set('dashTierMasteredPct',     pct(mastered));
-        set('dashTierProficient',      proficient);
-        set('dashTierProficientPct',   pct(proficient));
-        set('dashTierDeveloping',      developing);
-        set('dashTierDevelopingPct',   pct(developing));
-        set('dashTierNeedsSupport',    needsSupport);
-        set('dashTierNeedsSupportPct', pct(needsSupport));
-        set('dashAvgWps',     avgWps + '%');
-        set('dashMplCleared', mplCleared + ' / ' + assessed + ' (' + mplPct + '%)');
-        set('dashAtRiskPct',  atRiskCnt + ' students (' + atRiskPct + '%)');
-    }).catch(err => console.error("Error fetching performance analytics summary:", err));
+            // DepEd 4-tier proficiency distribution (based on rawAcc)
+            let mastered = 0, proficient = 0, developing = 0, needsSupport = 0;
+            // Performance Analytics (based on wps)
+            let sumWps = 0, sumRaw = 0, mplCleared = 0, competent = 0, atRisk = 0;
+
+            allStudentMetrics.forEach(s => {
+                // Proficiency tiers
+                if (s.rawAcc >= 75) mastered++;
+                else if (s.rawAcc >= 60) proficient++;
+                else if (s.rawAcc >= 50) developing++;
+                else needsSupport++;
+
+                // Performance analytics
+                sumWps += s.wps;
+                sumRaw += s.rawAcc;
+                if (s.wps >= 60) mplCleared++;
+                if (s.wps >= 75) competent++;
+                if (s.wps < 60) atRisk++;
+            });
+
+            const pct = n => `${Math.round((n / total) * 100)}% of cohort`;
+            const avgWps = Math.round(sumWps / total);
+            const avgRaw = Math.round(sumRaw / total);
+            const delta = avgWps - avgRaw;
+            const mplRate = Math.round((mplCleared / total) * 100);
+
+            // Proficiency distribution
+            document.getElementById('dash_tierMasteredCount').textContent = mastered;
+            document.getElementById('dash_tierMasteredPct').textContent = pct(mastered);
+            document.getElementById('dash_tierProficientCount').textContent = proficient;
+            document.getElementById('dash_tierProficientPct').textContent = pct(proficient);
+            document.getElementById('dash_tierDevelopingCount').textContent = developing;
+            document.getElementById('dash_tierDevelopingPct').textContent = pct(developing);
+            document.getElementById('dash_tierNeedsSupportCount').textContent = needsSupport;
+            document.getElementById('dash_tierNeedsSupportPct').textContent = pct(needsSupport);
+
+            // Performance analytics summary
+            document.getElementById('dash_avgWps').textContent = `${avgWps}%`;
+            document.getElementById('dash_wpsDelta').textContent = `${delta >= 0 ? '+' : ''}${delta}% vs Raw`;
+            document.getElementById('dash_mplPassRate').textContent = `${mplRate}%`;
+            document.getElementById('dash_mplPassRatio').textContent = `${mplCleared}/${total} students`;
+            document.getElementById('dash_competentCount').textContent = competent;
+            document.getElementById('dash_competentPct').textContent = pct(competent);
+            document.getElementById('dash_atRiskWps').textContent = atRisk;
+            document.getElementById('dash_atRiskWpsPct').textContent = pct(atRisk);
+        });
+    }).catch(err => console.error("Error fetching analytics data:", err));
 }
 
 // Chart.js Default styling overrides for professional look

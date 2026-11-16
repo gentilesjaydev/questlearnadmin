@@ -95,93 +95,6 @@
                     </div>
                 </div>
 
-                <!-- Performance Analytics Summary -->
-                <div class="card border-0 shadow-sm rounded-4 mb-5">
-                    <div class="card-body p-4">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                            <div>
-                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1 mb-2 d-inline-flex align-items-center gap-1" style="font-size: 0.75rem; font-weight: 700;">
-                                    <i class="fa-solid fa-chart-line" style="font-size: 0.65rem;"></i> Performance Analytics
-                                </span>
-                                <h5 class="fw-bold text-dark mb-1">
-                                    <i class="fa-solid fa-shield-halved text-primary me-2"></i> NATG6 Official Proficiency Distribution (DepEd Standards)
-                                </h5>
-                                <small class="text-muted">Standards-based classification across all assessed Grade 6 learners based on official First Attempts.</small>
-                            </div>
-                            <div class="d-flex gap-2 align-items-center flex-wrap">
-                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">
-                                    <i class="fa-solid fa-circle-check me-1"></i> MPL Passing Benchmark: 60% Accuracy
-                                </span>
-                                <a href="pages/teacher/performance" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 px-3" style="border-radius: 10px;">
-                                    <i class="fa-solid fa-chart-pie"></i> Full Analytics
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="row g-3 text-center mb-3">
-                            <div class="col-6 col-md-3">
-                                <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
-                                    <div class="d-flex align-items-center justify-content-center mb-1">
-                                        <span class="badge bg-success text-white px-2 rounded-pill small me-1">&ge; 75%</span>
-                                        <h6 class="fw-bold text-success mb-0">Mastered</h6>
-                                    </div>
-                                    <h3 class="fw-bolder text-success mb-0" id="dashTierMastered">0</h3>
-                                    <small class="text-muted fw-medium" id="dashTierMasteredPct">0% of cohort</small>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
-                                    <div class="d-flex align-items-center justify-content-center mb-1">
-                                        <span class="badge bg-primary text-white px-2 rounded-pill small me-1">60 - 74%</span>
-                                        <h6 class="fw-bold text-primary mb-0">Proficient</h6>
-                                    </div>
-                                    <h3 class="fw-bolder text-primary mb-0" id="dashTierProficient">0</h3>
-                                    <small class="text-muted fw-medium" id="dashTierProficientPct">0% of cohort</small>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning border-opacity-25 h-100">
-                                    <div class="d-flex align-items-center justify-content-center mb-1">
-                                        <span class="badge bg-warning text-dark px-2 rounded-pill small me-1">50 - 59%</span>
-                                        <h6 class="fw-bold text-warning mb-0">Developing</h6>
-                                    </div>
-                                    <h3 class="fw-bolder text-warning mb-0" id="dashTierDeveloping">0</h3>
-                                    <small class="text-muted fw-medium" id="dashTierDevelopingPct">0% of cohort</small>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-25 h-100">
-                                    <div class="d-flex align-items-center justify-content-center mb-1">
-                                        <span class="badge bg-danger text-white px-2 rounded-pill small me-1">&lt; 50%</span>
-                                        <h6 class="fw-bold text-danger mb-0">Needs Support</h6>
-                                    </div>
-                                    <h3 class="fw-bolder text-danger mb-0" id="dashTierNeedsSupport">0</h3>
-                                    <small class="text-muted fw-medium" id="dashTierNeedsSupportPct">0% of cohort</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Mini summary strip -->
-                        <div class="d-flex flex-wrap gap-3 pt-2 border-top">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-weight-hanging text-primary fa-sm"></i>
-                                <span class="text-muted small">Avg Weighted Score (WPS): <strong id="dashAvgWps" class="text-dark">—</strong></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-bullseye text-success fa-sm"></i>
-                                <span class="text-muted small">MPL Cleared: <strong id="dashMplCleared" class="text-success">—</strong></span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-triangle-exclamation text-danger fa-sm"></i>
-                                <span class="text-muted small">At-Risk (Below MPL): <strong id="dashAtRiskPct" class="text-danger">—</strong></span>
-                            </div>
-                            <a href="pages/teacher/competency-tracking" class="ms-auto text-primary small fw-bold text-decoration-none d-flex align-items-center gap-1">
-                                <i class="fa-solid fa-award fa-sm"></i> View Competency Tracking
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Main Data Dashboards -->
                 <div class="row g-4 mb-4">
                     <!-- Leaderboard Chart -->
@@ -212,6 +125,120 @@
                             </div>
                             <div class="p-2" style="position: relative; height: 320px; width: 100%; display: flex; justify-content: center; align-items: center;">
                                 <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Data Row: Live Student Activity Feed -->
+                <div class="row g-4 mb-4">
+
+                    <!-- NATG6 Proficiency Distribution -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body p-4">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-1">
+                                            <i class="fa-solid fa-shield-halved text-primary me-2"></i> NATG6 Official Proficiency Distribution (DepEd Standards)
+                                        </h5>
+                                        <small class="text-muted">Standards-based classification across all assessed Grade 6 learners based on official First Attempts.</small>
+                                    </div>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                                        <i class="fa-solid fa-circle-check me-1"></i> MPL Passing Benchmark: 60% Accuracy
+                                    </span>
+                                </div>
+                                <div class="row g-3 text-center">
+                                    <div class="col-6 col-md-3">
+                                        <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25 h-100">
+                                            <div class="d-flex align-items-center justify-content-center mb-1">
+                                                <span class="badge bg-success text-white px-2 rounded-pill small me-1">&ge; 75%</span>
+                                                <h6 class="fw-bold text-success mb-0">Mastered</h6>
+                                            </div>
+                                            <h3 class="fw-bolder text-success mb-0" id="dash_tierMasteredCount">0</h3>
+                                            <small class="text-muted fw-medium" id="dash_tierMasteredPct">0% of cohort</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-25 h-100">
+                                            <div class="d-flex align-items-center justify-content-center mb-1">
+                                                <span class="badge bg-primary text-white px-2 rounded-pill small me-1">60 - 74%</span>
+                                                <h6 class="fw-bold text-primary mb-0">Proficient</h6>
+                                            </div>
+                                            <h3 class="fw-bolder text-primary mb-0" id="dash_tierProficientCount">0</h3>
+                                            <small class="text-muted fw-medium" id="dash_tierProficientPct">0% of cohort</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning border-opacity-25 h-100">
+                                            <div class="d-flex align-items-center justify-content-center mb-1">
+                                                <span class="badge bg-warning text-dark px-2 rounded-pill small me-1">50 - 59%</span>
+                                                <h6 class="fw-bold text-warning mb-0">Developing</h6>
+                                            </div>
+                                            <h3 class="fw-bolder text-warning mb-0" id="dash_tierDevelopingCount">0</h3>
+                                            <small class="text-muted fw-medium" id="dash_tierDevelopingPct">0% of cohort</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-25 h-100">
+                                            <div class="d-flex align-items-center justify-content-center mb-1">
+                                                <span class="badge bg-danger text-white px-2 rounded-pill small me-1">&lt; 50%</span>
+                                                <h6 class="fw-bold text-danger mb-0">Needs Support</h6>
+                                            </div>
+                                            <h3 class="fw-bolder text-danger mb-0" id="dash_tierNeedsSupportCount">0</h3>
+                                            <small class="text-muted fw-medium" id="dash_tierNeedsSupportPct">0% of cohort</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Analytics Summary -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4 border-top border-primary border-4">
+                            <div class="card-body p-4">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-1">
+                                            <i class="fa-solid fa-calculator text-primary me-2"></i> Performance Analytics Summary
+                                        </h5>
+                                        <small class="text-muted">Weighted Proficiency Score, Cumulative Threshold Progression, and competency distribution across all Grade 6 learners.</small>
+                                    </div>
+                                    <a href="pages/teacher/performance" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold text-decoration-none">
+                                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Full Analytics
+                                    </a>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 rounded-4 p-3 h-100 text-center" style="background: linear-gradient(135deg, #f5f3ff, #ede9fe);">
+                                            <small class="fw-bold text-uppercase mb-1" style="font-size: 0.68rem; color: #6366f1;">Avg. Weighted (WPS)</small>
+                                            <h3 class="fw-bolder mb-0" style="color: #6366f1;" id="dash_avgWps">0%</h3>
+                                            <small class="text-muted" style="font-size: 0.72rem;" id="dash_wpsDelta">+0% vs Raw</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 rounded-4 p-3 h-100 text-center" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+                                            <small class="fw-bold text-uppercase mb-1 text-success" style="font-size: 0.68rem;">MPL Cleared (&ge; 60%)</small>
+                                            <h3 class="fw-bolder text-success mb-0" id="dash_mplPassRate">0%</h3>
+                                            <small class="text-muted" style="font-size: 0.72rem;" id="dash_mplPassRatio">0/0 students</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 rounded-4 p-3 h-100 text-center" style="background: linear-gradient(135deg, #f0fdf4, #d1fae5);">
+                                            <small class="fw-bold text-uppercase mb-1 text-success" style="font-size: 0.68rem;">Competent (&ge; 75%)</small>
+                                            <h3 class="fw-bolder text-success mb-0" id="dash_competentCount">0</h3>
+                                            <small class="text-muted" style="font-size: 0.72rem;" id="dash_competentPct">0% of cohort</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="card border-0 rounded-4 p-3 h-100 text-center" style="background: linear-gradient(135deg, #fff1f2, #ffe4e6);">
+                                            <small class="fw-bold text-uppercase mb-1 text-danger" style="font-size: 0.68rem;">Deficit / At-Risk</small>
+                                            <h3 class="fw-bolder text-danger mb-0" id="dash_atRiskWps">0</h3>
+                                            <small class="text-muted" style="font-size: 0.72rem;" id="dash_atRiskWpsPct">0% of cohort</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
