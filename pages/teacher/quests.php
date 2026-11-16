@@ -42,7 +42,7 @@
                             <label class="form-check-label ms-2 fw-bold text-muted" for="selectAllCheckbox" style="cursor: pointer; padding-top: 2px;">Select All</label>
                         </div>
                         <button class="btn btn-outline-primary px-3 py-2 d-flex align-items-center gap-2 bg-white" data-bs-toggle="modal" data-bs-target="#aiGeneratorModal">
-                            <i class="fa-solid fa-wand-magic-sparkles text-warning"></i> Generate with AI
+                            <i class="fa-solid fa-cloud-arrow-up text-primary"></i> Upload Module to Generate with AI
                         </button>
                         <button class="btn btn-primary px-4 py-2 d-flex align-items-center gap-2" id="addQuestBtn">
                             <i class="fa-solid fa-plus"></i> Add Question
@@ -64,9 +64,9 @@
                 <div class="modal-header bg-light border-bottom-0 p-4 pb-3">
                     <h5 class="modal-title fw-bold d-flex align-items-center gap-3">
                         <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 d-flex align-items-center justify-content-center">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
-                        AI Curriculum Generator
+                        Upload Module &bull; AI Curriculum Generator
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
