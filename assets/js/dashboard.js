@@ -18,19 +18,18 @@ function initDashboard() {
             const xpDistribution = { '< 500': 0, '500 - 2000': 0, '> 2000': 0 };
             let studentList = [];
 
-            // Analytics & Proficiency metrics
-            let tierMastered = 0, tierProficient = 0, tierDeveloping = 0, tierNeedsSupport = 0;
-            let totalWeightedSum = 0, totalRawSum = 0;
-            let cohortThresholdClearedCount = 0, cohortCompetentCount = 0, cohortAtRiskCount = 0;
-            let assessedCount = 0;
-            
+            // 1. Process all students using the exact Performance Analytics engine
+            let globalStats = [];
+            let totalQuestionsAnswered = 0;
+            let totalCorrectAnswers = 0;
+
             snapshot.forEach((child) => {
-                const data = child.val();
-                if (data.role === 'student' || !data.role) {
+                const student = child.val();
+                if (student.role === 'student' || !student.role) {
                     studentCount++;
-                    const xp = parseInt(data.xp) || 0;
-                    const hp = parseInt(data.hp) || 0;
-                    const level = parseInt(data.level) || 1;
+                    const xp = parseInt(student.xp) || 0;
+                    const hp = parseInt(student.hp) || 0;
+                    const level = parseInt(student.level) || 1;
                     totalXp += xp;
                     
                     // Consider a student "at risk" if their HP is dangerously low (e.g. <= 20)
@@ -40,34 +39,32 @@ function initDashboard() {
                     else if (level === 2) xpDistribution['500 - 2000']++;
                     else xpDistribution['> 2000']++;
                     
-                    const name = data.firstName ? `${data.firstName} ${data.lastName}` : 'Student';
+                    const firstName = student.firstName || '';
+                    const lastName = student.lastName || '';
+                    const name = (firstName + ' ' + lastName).trim() || 'Anonymous Student';
                     studentList.push({ name: name, xp: xp, hp: hp, level: level });
 
-                    // Assessment & Capstone Telemetry Extraction
-                    const faStats = extractFirstAttemptStats(data);
+                    // Canonical First-Attempt diagnostic extraction (identical to performance.js)
+                    const faStats = extractStudentFirstAttemptStats(student);
                     const sTotal = faStats.totalAnswers;
                     const sCorrect = faStats.totalCorrect;
+                    const sWrong = faStats.totalWrong;
+
+                    totalQuestionsAnswered += sTotal;
+                    totalCorrectAnswers += sCorrect;
+
                     const accuracy = sTotal > 0 ? Math.round((sCorrect / sTotal) * 100) : 0;
 
-                    if (sTotal > 0) {
-                        assessedCount++;
-                        totalRawSum += accuracy;
-
-                        // DepEd 4-Tier Proficiency Distribution (based on diagnostic accuracy)
-                        if (accuracy >= 75) tierMastered++;
-                        else if (accuracy >= 60) tierProficient++;
-                        else if (accuracy >= 50) tierDeveloping++;
-                        else tierNeedsSupport++;
-
-                        // Capstone Weighted Proficiency (WPS) & Cumulative Threshold Gate
-                        const wpsData = calculateWeightedProficiency(data, faStats, accuracy);
-                        const threshData = calculateCumulativeThresholdProgression(data, wpsData);
-
-                        totalWeightedSum += wpsData.weightedScore;
-                        if (threshData.hasPassedMPL) cohortThresholdClearedCount++;
-                        if (wpsData.weightedScore >= 75) cohortCompetentCount++;
-                        if (wpsData.weightedScore < 60) cohortAtRiskCount++;
-                    }
+                    globalStats.push({
+                        uid: child.key,
+                        name: name,
+                        accuracy: accuracy,
+                        correctAnswers: sCorrect,
+                        totalAnswered: sTotal,
+                        rawStudent: student,
+                        firstAttemptStats: student.firstAttemptStats,
+                        firstAttempts: student.firstAttempts
+                    });
                 }
             });
             window.dashboardStudentList = studentList;
@@ -115,36 +112,81 @@ function initDashboard() {
                 feedContainer.innerHTML = '<div class="col-12 text-center text-muted py-4">No registered students found.</div>';
             }
 
-            // Render NATG6 Proficiency Distribution & Performance Analytics Cards
-            const cohortSize = assessedCount > 0 ? assessedCount : studentCount;
-            const pct = n => cohortSize > 0 ? `${Math.round((n / cohortSize) * 100)}% of cohort` : '0% of cohort';
-            const avgWps = assessedCount > 0 ? Math.round(totalWeightedSum / assessedCount) : 0;
-            const avgRaw = assessedCount > 0 ? Math.round(totalRawSum / assessedCount) : 0;
-            const delta = avgWps - avgRaw;
-            const mplRate = assessedCount > 0 ? Math.round((cohortThresholdClearedCount / assessedCount) * 100) : 0;
+            // Calculate DepEd 4-Tier Proficiency Distribution (identical to performance.js)
+            let tierMastered = 0;
+            let tierProficient = 0;
+            let tierDeveloping = 0;
+            let tierNeedsSupport = 0;
+
+            globalStats.forEach(s => {
+                const acc = parseInt(s.accuracy) || 0;
+                if (acc >= 75) {
+                    tierMastered++;
+                } else if (acc >= 60) {
+                    tierProficient++;
+                } else if (acc >= 50) {
+                    tierDeveloping++;
+                } else {
+                    tierNeedsSupport++;
+                }
+            });
+
+            const totalCohort = globalStats.length;
+            const mPct = totalCohort > 0 ? Math.round((tierMastered / totalCohort) * 100) : 0;
+            const pPct = totalCohort > 0 ? Math.round((tierProficient / totalCohort) * 100) : 0;
+            const dPct = totalCohort > 0 ? Math.round((tierDeveloping / totalCohort) * 100) : 0;
+            const nPct = totalCohort > 0 ? Math.round((tierNeedsSupport / totalCohort) * 100) : 0;
 
             const elTierM = document.getElementById('dash_tierMasteredCount');
             if (elTierM) {
-                elTierM.textContent = tierMastered;
-                document.getElementById('dash_tierMasteredPct').textContent = pct(tierMastered);
-                document.getElementById('dash_tierProficientCount').textContent = tierProficient;
-                document.getElementById('dash_tierProficientPct').textContent = pct(tierProficient);
-                document.getElementById('dash_tierDevelopingCount').textContent = tierDeveloping;
-                document.getElementById('dash_tierDevelopingPct').textContent = pct(tierDeveloping);
-                document.getElementById('dash_tierNeedsSupportCount').textContent = tierNeedsSupport;
-                document.getElementById('dash_tierNeedsSupportPct').textContent = pct(tierNeedsSupport);
+                elTierM.innerText = tierMastered;
+                document.getElementById('dash_tierMasteredPct').innerText = `${mPct}% of cohort`;
+                document.getElementById('dash_tierProficientCount').innerText = tierProficient;
+                document.getElementById('dash_tierProficientPct').innerText = `${pPct}% of cohort`;
+                document.getElementById('dash_tierDevelopingCount').innerText = tierDeveloping;
+                document.getElementById('dash_tierDevelopingPct').innerText = `${dPct}% of cohort`;
+                document.getElementById('dash_tierNeedsSupportCount').innerText = tierNeedsSupport;
+                document.getElementById('dash_tierNeedsSupportPct').innerText = `${nPct}% of cohort`;
             }
+
+            // Calculate Capstone Weighted Scoring & Cumulative Threshold Cohort Metrics (identical to performance.js)
+            let totalWeightedSum = 0;
+            let cohortThresholdClearedCount = 0;
+            let assessedCount = 0;
+            let competentCount = 0;
+            let atRiskWpsCount = 0;
+
+            globalStats.forEach(s => {
+                const wps = calculateWeightedProficiency(s.rawStudent, s, s.accuracy);
+                const thresh = calculateCumulativeThresholdProgression(s.rawStudent, wps);
+                s.weightedScore = wps.weightedScore;
+
+                if (s.totalAnswered > 0) {
+                    totalWeightedSum += wps.weightedScore;
+                    assessedCount++;
+                    if (thresh.hasPassedMPL) cohortThresholdClearedCount++;
+                    if (wps.weightedScore >= 75) competentCount++;
+                    if (wps.weightedScore < 60) atRiskWpsCount++;
+                }
+            });
+
+            const overallAccuracy = totalQuestionsAnswered > 0 ? Math.round((totalCorrectAnswers / totalQuestionsAnswered) * 100) : 0;
+            const classAvgWps = assessedCount > 0 ? Math.round(totalWeightedSum / assessedCount) : overallAccuracy;
+            const wpsDelta = classAvgWps - overallAccuracy;
+            const cohortPassingPct = assessedCount > 0 ? Math.round((cohortThresholdClearedCount / assessedCount) * 100) : 0;
+            const competentPct = assessedCount > 0 ? Math.round((competentCount / assessedCount) * 100) : 0;
+            const atRiskPct = assessedCount > 0 ? Math.round((atRiskWpsCount / assessedCount) * 100) : 0;
 
             const elAvgWps = document.getElementById('dash_avgWps');
             if (elAvgWps) {
-                elAvgWps.textContent = `${avgWps}%`;
-                document.getElementById('dash_wpsDelta').textContent = `${delta >= 0 ? '+' : ''}${delta}% vs Raw`;
-                document.getElementById('dash_mplPassRate').textContent = `${mplRate}%`;
-                document.getElementById('dash_mplPassRatio').textContent = `${cohortThresholdClearedCount}/${assessedCount} cleared`;
-                document.getElementById('dash_competentCount').textContent = cohortCompetentCount;
-                document.getElementById('dash_competentPct').textContent = pct(cohortCompetentCount);
-                document.getElementById('dash_atRiskWps').textContent = cohortAtRiskCount;
-                document.getElementById('dash_atRiskWpsPct').textContent = pct(cohortAtRiskCount);
+                elAvgWps.innerText = `${classAvgWps}%`;
+                document.getElementById('dash_wpsDelta').innerText = `${wpsDelta >= 0 ? '+' : ''}${wpsDelta}% vs Raw (${overallAccuracy}%)`;
+                document.getElementById('dash_mplPassRate').innerText = `${cohortPassingPct}%`;
+                document.getElementById('dash_mplPassRatio').innerText = `${cohortThresholdClearedCount}/${assessedCount} cleared`;
+                document.getElementById('dash_competentCount').innerText = competentCount;
+                document.getElementById('dash_competentPct').innerText = `${competentPct}% of assessed`;
+                document.getElementById('dash_atRiskWps').innerText = atRiskWpsCount;
+                document.getElementById('dash_atRiskWpsPct').innerText = `${atRiskPct}% of assessed`;
             }
         } else {
             // No users found
@@ -167,58 +209,169 @@ function initDashboard() {
     }).catch(err => console.error("Error fetching quests:", err));
 }
 
-// Helper: Extract First-Attempt diagnostic statistics from student record
-function extractFirstAttemptStats(student) {
-    if (!student) return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, categories: {} };
+// Canonical Helper: Extract First-Attempt diagnostic statistics from student record (exact performance.js logic)
+function extractStudentFirstAttemptStats(student) {
+    if (!student) return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, retryCount: 0, categories: {} };
 
-    // 1. Explicit firstAttemptStats
+    // 1. If explicit firstAttemptStats exists, use directly
     if (student.firstAttemptStats && (student.firstAttemptStats.totalAnswers > 0 || student.firstAttemptStats.totalCorrect > 0)) {
         return {
             totalAnswers: Number(student.firstAttemptStats.totalAnswers) || 0,
             totalCorrect: Number(student.firstAttemptStats.totalCorrect) || 0,
             totalWrong: Number(student.firstAttemptStats.totalWrong) || 0,
+            retryCount: Number(student.retryCount) || 0,
             categories: student.firstAttemptStats.categories || {}
         };
     }
 
-    // 2. From firstAttempts dictionary
-    if (student.firstAttempts && typeof student.firstAttempts === 'object') {
-        let total = 0, correct = 0, wrong = 0;
-        const categories = {};
-        Object.values(student.firstAttempts).forEach(att => {
-            if (att && typeof att === 'object') {
-                const c = Number(att.correctAnswers || att.score || att.correct || 0);
-                const t = Number(att.totalQuestions || att.total || att.questionsAnswered || 0);
-                const w = Math.max(0, t - c);
-                total += t;
-                correct += c;
-                wrong += w;
+    function normalizeCat(cat) {
+        const c = String(cat || '').toLowerCase().replace(/[\s_-]+/g, '');
+        if (c.includes('gram')) return 'grammar';
+        if (c.includes('vocab')) return 'vocabulary';
+        if (c.includes('read') || c.includes('comprehen')) return 'reading';
+        if (c.includes('spell')) return 'spelling';
+        return 'information_literacy';
+    }
 
-                const cat = (att.category || 'grammar').toLowerCase();
-                if (!categories[cat]) categories[cat] = { total: 0, correct: 0 };
-                categories[cat].total += t;
-                categories[cat].correct += c;
+    let categories = {
+        grammar: { correct: 0, wrong: 0, total: 0 },
+        vocabulary: { correct: 0, wrong: 0, total: 0 },
+        reading: { correct: 0, wrong: 0, total: 0 },
+        spelling: { correct: 0, wrong: 0, total: 0 },
+        information_literacy: { correct: 0, wrong: 0, total: 0 }
+    };
+
+    let totalCorrect = 0;
+    let totalWrong = 0;
+    let retryCount = 0;
+
+    // 2. Derive strictly from gameHistory level_complete events with firstClear === true
+    if (student.gameHistory && typeof student.gameHistory === 'object') {
+        const levelClears = {};
+        let replayRuns = 0;
+
+        const entries = Object.values(student.gameHistory)
+            .filter(e => e && typeof e === 'object')
+            .sort((a, b) => (Number(a.at || a.timestamp) || 0) - (Number(b.at || b.timestamp) || 0));
+
+        entries.forEach(e => {
+            if (e.type === 'level_complete') {
+                const cat = normalizeCat(e.category || e.questKind);
+                const lvl = e.questLevel || e.level || 1;
+                const levelKey = `${cat}_L${lvl}`;
+
+                if (e.firstClear === true || !levelClears[levelKey]) {
+                    if (!levelClears[levelKey]) {
+                        levelClears[levelKey] = {
+                            correct: Number(e.correct) || 0,
+                            wrong: Number(e.wrong) || 0
+                        };
+                    }
+                } else {
+                    replayRuns++;
+                }
             }
         });
-        if (total > 0) {
-            return { totalAnswers: total, totalCorrect: correct, totalWrong: wrong, categories: categories };
+
+        const clearedKeys = Object.keys(levelClears);
+        if (clearedKeys.length > 0) {
+            clearedKeys.forEach(k => {
+                const item = levelClears[k];
+                const cat = k.split('_L')[0];
+                const c = item.correct;
+                const w = item.wrong;
+                totalCorrect += c;
+                totalWrong += w;
+                if (categories[cat]) {
+                    categories[cat].correct += c;
+                    categories[cat].wrong += w;
+                    categories[cat].total += (c + w);
+                }
+            });
+
+            if (student.gameLevels && typeof student.gameLevels === 'object') {
+                Object.values(student.gameLevels).forEach(gl => {
+                    const plays = Number(gl.plays) || 0;
+                    if (plays > 1) retryCount += (plays - 1);
+                });
+            } else {
+                retryCount = replayRuns;
+            }
+
+            return {
+                totalAnswers: totalCorrect + totalWrong,
+                totalCorrect: totalCorrect,
+                totalWrong: totalWrong,
+                retryCount: retryCount,
+                categories: categories
+            };
+        }
+
+        // In-progress questions answered before level completion
+        const seenQuestionLevel = {};
+        entries.forEach(e => {
+            if (e.correct !== undefined && e.type !== 'level_complete') {
+                const cat = normalizeCat(e.category || e.questKind);
+                const lvl = e.level || 1;
+                const key = `${cat}_L${lvl}`;
+                if (!seenQuestionLevel[key]) seenQuestionLevel[key] = { correct: 0, wrong: 0 };
+                if (e.correct === true) seenQuestionLevel[key].correct++;
+                else if (e.correct === false) seenQuestionLevel[key].wrong++;
+            }
+        });
+
+        Object.keys(seenQuestionLevel).forEach(k => {
+            const cat = k.split('_L')[0];
+            const c = seenQuestionLevel[k].correct;
+            const w = seenQuestionLevel[k].wrong;
+            totalCorrect += c;
+            totalWrong += w;
+            if (categories[cat]) {
+                categories[cat].correct += c;
+                categories[cat].wrong += w;
+                categories[cat].total += (c + w);
+            }
+        });
+
+        if (totalCorrect + totalWrong > 0) {
+            return {
+                totalAnswers: totalCorrect + totalWrong,
+                totalCorrect: totalCorrect,
+                totalWrong: totalWrong,
+                retryCount: retryCount,
+                categories: categories
+            };
         }
     }
 
-    // 3. Fallback: gameHistory level_complete
-    if (student.gameHistory && typeof student.gameHistory === 'object') {
-        let total = 0, correct = 0, wrong = 0;
-        Object.values(student.gameHistory).forEach(e => {
-            if (e && typeof e === 'object' && e.type === 'level_complete') {
-                const c = Number(e.correct) || 0;
-                const w = Number(e.wrong) || 0;
-                correct += c;
-                wrong += w;
-                total += (c + w);
+    // 3. Fallback: gameLevels or gameStats
+    if (student.gameLevels && typeof student.gameLevels === 'object') {
+        Object.values(student.gameLevels).forEach(gl => {
+            const c = Number(gl.correct) || 0;
+            const w = Number(gl.wrong) || 0;
+            const plays = Number(gl.plays) || 1;
+            const estC = plays > 0 ? Math.round(c / plays) : c;
+            const estW = plays > 0 ? Math.round(w / plays) : w;
+            totalCorrect += estC;
+            totalWrong += estW;
+            if (plays > 1) retryCount += (plays - 1);
+
+            const cat = normalizeCat(gl.category || gl.questKind);
+            if (categories[cat]) {
+                categories[cat].correct += estC;
+                categories[cat].wrong += estW;
+                categories[cat].total += (estC + estW);
             }
         });
-        if (total > 0) {
-            return { totalAnswers: total, totalCorrect: correct, totalWrong: wrong, categories: {} };
+
+        if (totalCorrect + totalWrong > 0) {
+            return {
+                totalAnswers: totalCorrect + totalWrong,
+                totalCorrect: totalCorrect,
+                totalWrong: totalWrong,
+                retryCount: retryCount,
+                categories: categories
+            };
         }
     }
 
@@ -228,11 +381,12 @@ function extractFirstAttemptStats(student) {
             totalAnswers: Number(student.gameStats.totalAnswers) || 0,
             totalCorrect: Number(student.gameStats.totalCorrect) || 0,
             totalWrong: Number(student.gameStats.totalWrong) || 0,
+            retryCount: Number(student.gameStats.retryCount) || 0,
             categories: student.gameStats.categories || {}
         };
     }
 
-    return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, categories: {} };
+    return { totalAnswers: 0, totalCorrect: 0, totalWrong: 0, retryCount: 0, categories: {} };
 }
 
 // Helper: Calculate Weighted Proficiency Score (WPS)
