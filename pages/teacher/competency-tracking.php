@@ -72,58 +72,58 @@
 
                 <!-- Competency KPI Status Cards -->
                 <div class="row g-3 mb-4">
-                    <div class="col-6 col-lg-2">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-primary border-3">
-                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Total Assessed</small>
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">Total Assessed</small>
                             <h3 class="fw-bolder mb-0 mt-1 text-dark" id="statTotalStudents">0</h3>
                             <small class="text-muted" style="font-size: 0.72rem;">Grade 6 Learners</small>
                         </div>
                     </div>
-                    <div class="col-6 col-lg-2">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-info border-3">
-                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">Competency Index</small>
+                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.68rem;">Raw Accuracy</small>
                             <h3 class="fw-bolder mb-0 mt-1 text-info" id="statAvgAccuracy">0%</h3>
-                            <small class="text-muted" style="font-size: 0.72rem;">Overall Cohort Avg</small>
+                            <small class="text-muted" style="font-size: 0.72rem;">Unweighted Avg</small>
                         </div>
                     </div>
-                    <div class="col-6 col-lg-2">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-3" style="border-top-color: #6366f1 !important;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <small class="fw-bold text-uppercase" style="font-size: 0.68rem; color: #6366f1;">Weighted (WPS)</small>
+                                <span class="badge bg-indigo bg-opacity-10 text-primary rounded-pill" style="font-size: 0.65rem;">L1-L4</span>
+                            </div>
+                            <h3 class="fw-bolder mb-0 mt-1 text-dark" id="statAvgWps">0%</h3>
+                            <small class="text-muted" id="statWpsDelta" style="font-size: 0.72rem;">+0% Calibration</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-3" style="border-top-color: #10b981 !important;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <small class="text-success fw-bold text-uppercase" style="font-size: 0.68rem;">MPL Threshold</small>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.65rem;">≥ 60%</span>
+                            </div>
+                            <h3 class="fw-bolder mb-0 mt-1 text-success" id="statThresholdPassRate">0%</h3>
+                            <small class="text-muted" id="statThresholdPassRatio" style="font-size: 0.72rem;">0/0 Cleared</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-success border-3">
                             <div class="d-flex align-items-center justify-content-between">
-                                <small class="text-success fw-bold text-uppercase" style="font-size: 0.7rem;">Competent</small>
+                                <small class="text-success fw-bold text-uppercase" style="font-size: 0.68rem;">Competent</small>
                                 <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.65rem;">≥ 75%</span>
                             </div>
                             <h3 class="fw-bolder mb-0 mt-1 text-success" id="statCompetentCount">0</h3>
                             <small class="text-muted" id="statCompetentPct" style="font-size: 0.72rem;">0% of cohort</small>
                         </div>
                     </div>
-                    <div class="col-6 col-lg-2">
-                        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-primary border-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <small class="text-primary fw-bold text-uppercase" style="font-size: 0.7rem;">In Progress</small>
-                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill" style="font-size: 0.65rem;">60-74%</span>
-                            </div>
-                            <h3 class="fw-bolder mb-0 mt-1 text-primary" id="statInProgressCount">0</h3>
-                            <small class="text-muted" id="statInProgressPct" style="font-size: 0.72rem;">0% of cohort</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-2">
-                        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-warning border-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <small class="text-warning fw-bold text-uppercase" style="font-size: 0.7rem;">Needs Imprv.</small>
-                                <span class="badge bg-warning bg-opacity-10 text-dark rounded-pill" style="font-size: 0.65rem;">50-59%</span>
-                            </div>
-                            <h3 class="fw-bolder mb-0 mt-1 text-warning" id="statNeedsImprovementCount">0</h3>
-                            <small class="text-muted" id="statNeedsImprovementPct" style="font-size: 0.72rem;">0% of cohort</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-2">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white border-top border-danger border-3">
                             <div class="d-flex align-items-center justify-content-between">
-                                <small class="text-danger fw-bold text-uppercase" style="font-size: 0.7rem;">Not Yet Comp.</small>
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill" style="font-size: 0.65rem;">< 50%</span>
+                                <small class="text-danger fw-bold text-uppercase" style="font-size: 0.68rem;">Deficit / Risk</small>
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill" style="font-size: 0.65rem;">< 60%</span>
                             </div>
-                            <h3 class="fw-bolder mb-0 mt-1 text-danger" id="statNotYetCompetentCount">0</h3>
-                            <small class="text-muted" id="statNotYetCompetentPct" style="font-size: 0.72rem;">0% of cohort</small>
+                            <h3 class="fw-bolder mb-0 mt-1 text-danger" id="statAtRiskCount">0</h3>
+                            <small class="text-muted" id="statAtRiskPct" style="font-size: 0.72rem;">0% of cohort</small>
                         </div>
                     </div>
                 </div>
@@ -161,19 +161,21 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 20%;">Student Name</th>
-                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 14%;">Linguistic Prof.</th>
-                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 14%;">Comprehension</th>
-                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 14%;">Critical Thinking</th>
-                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 14%;">Info Literacy</th>
-                                    <th class="px-3 py-3 text-muted text-center text-nowrap" style="width: 10%;">Score</th>
-                                    <th class="px-3 py-3 text-muted text-center text-nowrap" style="width: 14%;">Status</th>
-                                    <th class="px-3 py-3 text-muted text-end text-nowrap" style="width: 10%;">Details</th>
+                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 18%;">Student Name</th>
+                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 11%;">Linguistic</th>
+                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 11%;">Comprehension</th>
+                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 11%;">Critical Thinking</th>
+                                    <th class="px-3 py-3 text-muted text-nowrap" style="width: 11%;">Info Literacy</th>
+                                    <th class="px-3 py-3 text-muted text-center text-nowrap" style="width: 7%;">Raw</th>
+                                    <th class="px-3 py-3 text-muted text-center text-nowrap" style="width: 9%;">Weighted (WPS)</th>
+                                    <th class="px-3 py-3 text-muted text-center text-nowrap" style="width: 10%;">Threshold Gate</th>
+                                    <th class="px-3 py-3 text-muted text-center text-nowrap" style="width: 11%;">Status</th>
+                                    <th class="px-3 py-3 text-muted text-end text-nowrap" style="width: 7%;">Details</th>
                                 </tr>
                             </thead>
                             <tbody id="competencyTableBody">
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted py-5">
+                                    <td colspan="10" class="text-center text-muted py-5">
                                         <i class="fa-solid fa-circle-notch fa-spin fa-2x mb-3 text-primary"></i><br>
                                         Loading student competency telemetry...
                                     </td>
@@ -208,13 +210,26 @@
                             <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                 <span class="badge px-3 py-1.5 rounded-pill fw-bold" id="detailModalStatusBadge">Status</span>
                                 <span class="badge bg-light text-dark border px-3 py-1.5 rounded-pill fw-bold" id="detailModalScoreBadge">0% Accuracy</span>
+                                <span class="badge bg-indigo bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-bold" id="detailModalWpsBadge">0% Weighted (WPS)</span>
+                                <span class="badge px-3 py-1.5 rounded-pill fw-bold" id="detailModalThresholdBadge">Threshold Gate</span>
                             </div>
                             <h6 class="fw-bold text-dark mt-3 mb-1">Diagnostic Remarks & Assessment Feedback:</h6>
                             <p class="text-muted small mb-3" id="detailModalRemarks" style="line-height: 1.6;">No remarks available.</p>
                             
-                            <div class="p-3 bg-light rounded-3 border small">
+                            <div class="p-3 bg-light rounded-3 border small mb-3">
                                 <div class="fw-bold text-dark mb-1"><i class="fa-solid fa-shield-halved text-primary me-1"></i> Assessment Telemetry Basis</div>
                                 <div class="text-muted">Total Questions Attempted: <strong id="detailTotalAnswers" class="text-dark">0</strong> | Correct: <strong id="detailCorrectAnswers" class="text-success">0</strong> | Wrong: <strong id="detailWrongAnswers" class="text-danger">0</strong></div>
+                            </div>
+
+                            <!-- Cumulative Threshold Milestones -->
+                            <div class="p-3 bg-white rounded-3 border small">
+                                <div class="fw-bold text-dark mb-2 d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-stairs text-primary me-1.5"></i> Cumulative Threshold Milestones</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Passing Gate: ≥ 60% MPL</span>
+                                </div>
+                                <div class="row g-2 text-center" id="detailModalMilestones">
+                                    <!-- Injected by JS -->
+                                </div>
                             </div>
                         </div>
                     </div>

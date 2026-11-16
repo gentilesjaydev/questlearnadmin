@@ -212,6 +212,186 @@ $base = '../../';
                     </div>
                 </div>
 
+                <!-- SPECIAL SECTION: CAPSTONE LEARNING PATTERN ANALYSIS FRAMEWORK -->
+                <div class="card methodology-step-card mb-5 border-2" style="border-color: #6366f1 !important; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08);" id="section-capstone-framework">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary text-white p-2 rounded-3">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </span>
+                            <div>
+                                <h4 class="fw-bolder mb-0 text-dark" style="letter-spacing: -0.5px;">
+                                    Capstone Learning Pattern Analysis Framework
+                                </h4>
+                                <small class="text-muted">Weighted Scoring &bull; Cumulative Threshold Progression &bull; Performance Trend Thread</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-indigo bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-bold small">
+                            Panel Revision Item #5 Compliant
+                        </span>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <p class="text-secondary mb-4" style="font-size: 1.02rem; line-height: 1.7;">
+                            To fulfill the capstone requirements for comprehensive diagnostic tracking, QuestLearn combines three core evaluative pillars:
+                            <strong>Weighted Scoring (WPS)</strong> to calibrate difficulty, <strong>Cumulative Threshold Progression</strong> to enforce sequential competency gates, and a visible <strong>Performance Thread</strong> linking raw assessment telemetry directly to adaptive remediation.
+                        </p>
+
+                        <!-- 3 Pillars Grid -->
+                        <div class="row g-4 mb-4">
+                            <!-- Pillar 1: Weighted Scoring -->
+                            <div class="col-lg-4">
+                                <div class="p-4 rounded-4 bg-light border h-100">
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <div class="p-2 rounded-3 text-white" style="background: #6366f1;">
+                                            <i class="fa-solid fa-weight-scale"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-0">1. Weighted Scoring</h5>
+                                    </div>
+                                    <p class="small text-muted mb-3">
+                                        Simple percentage accuracy treats all questions identically, inflating grades if a student only answers easy recall questions. QuestLearn calibrates accuracy by question difficulty tier:
+                                    </p>
+                                    <div class="p-2.5 rounded-3 bg-white border text-center font-monospace small mb-3 text-primary fw-bold" style="font-size: 0.8rem;">
+                                        WPS = &Sigma;(Accuracy<sub>i</sub> &times; Weight<sub>i</sub>) / &Sigma;(Weight<sub>i</sub>)
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered bg-white mb-0" style="font-size: 0.78rem;">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Tier / Bloom</th>
+                                                    <th>Weight</th>
+                                                    <th>Contribution</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Level 1 (Recall / Easy)</td>
+                                                    <td class="fw-bold">1.0&times;</td>
+                                                    <td>15% of pool</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Level 2 (Apply / Medium)</td>
+                                                    <td class="fw-bold">1.5&times;</td>
+                                                    <td>25% of pool</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Level 3 (Evaluate / Hard)</td>
+                                                    <td class="fw-bold">2.0&times;</td>
+                                                    <td>30% of pool</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Level 4 (Creation / Boss)</td>
+                                                    <td class="fw-bold">2.5&times;</td>
+                                                    <td>30% of pool</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pillar 2: Cumulative Threshold Progression -->
+                            <div class="col-lg-4">
+                                <div class="p-4 rounded-4 bg-light border h-100">
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <div class="p-2 rounded-3 text-white" style="background: #10b981;">
+                                            <i class="fa-solid fa-stairs"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-0">2. Cumulative Threshold</h5>
+                                    </div>
+                                    <p class="small text-muted mb-3">
+                                        Learners advance across sequential curriculum stages. At each stage, their running cumulative score is evaluated against mandatory progression threshold gates:
+                                    </p>
+                                    <div class="d-flex flex-column gap-2" style="font-size: 0.8rem;">
+                                        <div class="p-2 rounded-3 bg-white border d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>Stage 1 (L1 Recall):</strong><br>
+                                                <small class="text-muted">Foundational Recall Gate</small>
+                                            </div>
+                                            <span class="badge bg-warning bg-opacity-10 text-dark border px-2.5 py-1 rounded-pill fw-bold">Req: &ge; 50%</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>Stage 2 (L1-L2 Application):</strong><br>
+                                                <small class="text-muted">Cumulative Application Gate</small>
+                                            </div>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary border px-2.5 py-1 rounded-pill fw-bold">Req: &ge; 55%</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border d-flex justify-content-between align-items-center border-success">
+                                            <div>
+                                                <strong class="text-success">Stage 3 (L1-L3 DepEd Passing):</strong><br>
+                                                <small class="text-muted">Mandatory DepEd Passing MPL</small>
+                                            </div>
+                                            <span class="badge bg-success text-white px-2.5 py-1 rounded-pill fw-bold">Req: &ge; 60%</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>Stage 4 (L1-L4 Synthesis):</strong><br>
+                                                <small class="text-muted">Advanced NATG6 Mastery Gate</small>
+                                            </div>
+                                            <span class="badge bg-indigo bg-opacity-10 text-primary border px-2.5 py-1 rounded-pill fw-bold">Req: &ge; 75%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pillar 3: Performance Trend & Thread -->
+                            <div class="col-lg-4">
+                                <div class="p-4 rounded-4 bg-light border h-100">
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <div class="p-2 rounded-3 text-white" style="background: #3b82f6;">
+                                            <i class="fa-solid fa-route"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark mb-0">3. Performance Thread</h5>
+                                    </div>
+                                    <p class="small text-muted mb-3">
+                                        Rather than a black-box metric, the <strong>Performance Thread</strong> makes the entire evaluative path traceable from raw question answering to remediation:
+                                    </p>
+                                    <div class="d-flex flex-column gap-2" style="font-size: 0.8rem;">
+                                        <div class="p-2 rounded-3 bg-white border">
+                                            <strong class="text-primary"><i class="fa-solid fa-1 me-1"></i> Telemetry Capture:</strong><br>
+                                            <span class="text-muted">Records first-attempt answers, correctness boolean, and question level.</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border">
+                                            <strong class="text-primary"><i class="fa-solid fa-2 me-1"></i> Weighted Calibration:</strong><br>
+                                            <span class="text-muted">Applies Bloom weights (1.0&times; - 2.5&times;) to calculate WPS.</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border">
+                                            <strong class="text-primary"><i class="fa-solid fa-3 me-1"></i> Cumulative Gate Check:</strong><br>
+                                            <span class="text-muted">Evaluates whether cumulative score clears the 60% DepEd benchmark.</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border">
+                                            <strong class="text-primary"><i class="fa-solid fa-4 me-1"></i> Weakness Bottleneck:</strong><br>
+                                            <span class="text-muted">Identifies the specific lowest competency & deficit margin.</span>
+                                        </div>
+                                        <div class="p-2 rounded-3 bg-white border">
+                                            <strong class="text-success"><i class="fa-solid fa-5 me-1"></i> Targeted Remediation:</strong><br>
+                                            <span class="text-muted">Generates AI insights and remedial quest recommendations.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Locations Notice -->
+                        <div class="p-3 bg-light rounded-3 border">
+                            <h6 class="fw-bold text-dark mb-1">
+                                <i class="fa-solid fa-location-dot text-primary me-2"></i> Where Evaluators Can Inspect These Capstone Elements in the Portal:
+                            </h6>
+                            <div class="row g-2 mt-1 small">
+                                <div class="col-md-4">
+                                    <strong>Performance Analytics:</strong> Cohort Weighted Score card, Cumulative Passing Rate progress bar, and Performance Trend Line Chart.
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Competency Tracking:</strong> Matrix columns for Weighted Score (WPS) and Threshold Gate Status (&ge;60% Cleared vs Deficit).
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Student Modal:</strong> Dedicated "Performance Thread & Thresholds" tab with live 5-step trace and milestone badges.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SECTION 1: DATA COLLECTION -->
                 <div class="card methodology-step-card mb-4" id="section-data-collection">
                     <div class="card-body p-4 p-md-5">

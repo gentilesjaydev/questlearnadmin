@@ -105,6 +105,122 @@
                     </div>
                 </div>
 
+                <!-- Capstone Learning Pattern Analysis: Weighted Scoring, Cumulative Thresholds & Performance Trends -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 border-top border-primary border-4" style="box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02) !important;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">
+                                    <i class="fa-solid fa-calculator text-primary me-2"></i> Capstone Learning Pattern Analysis: Weighted Scoring & Cumulative Thresholds
+                                </h5>
+                                <small class="text-muted">Standards-compliant assessment measuring question difficulty weights, milestone cumulative threshold clearances, and performance trends.</small>
+                            </div>
+                            <a href="<?php echo $base; ?>pages/teacher/learning-pattern-methodology" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold text-decoration-none">
+                                <i class="fa-solid fa-book-open me-1"></i> View Methodological Proof
+                            </a>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <!-- Weighted Scoring KPI -->
+                            <div class="col-lg-4 col-md-6">
+                                <div class="p-3.5 rounded-4 bg-light border h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-uppercase fw-bold text-muted" style="font-size:0.75rem;">1. Weighted Scoring Model</span>
+                                            <span class="badge bg-primary text-white rounded-pill px-2 py-0.5 small">WPS Index</span>
+                                        </div>
+                                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                                            <h2 class="fw-bolder mb-0 text-dark" id="classWeightedScoreDisplay">--%</h2>
+                                            <span class="text-muted small">vs <span id="classRawAccuracyDisplay" class="fw-bold">--%</span> Raw Acc</span>
+                                        </div>
+                                        <div class="small text-muted mb-2">
+                                            Weights question complexity: L1 (1.0x), L2 (1.5x), L3 (2.0x), L4 Boss (2.5x).
+                                        </div>
+                                    </div>
+                                    <div class="pt-2 border-top">
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>Difficulty Calibration Delta:</span>
+                                            <span class="fw-bold text-primary" id="weightedAdjustmentDelta">+0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cumulative Threshold Progression -->
+                            <div class="col-lg-4 col-md-6">
+                                <div class="p-3.5 rounded-4 bg-light border h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-uppercase fw-bold text-muted" style="font-size:0.75rem;">2. Cumulative Threshold Progression</span>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2 py-0.5 small">MPL: 60%</span>
+                                        </div>
+                                        <div class="d-flex align-items-baseline gap-2 mb-2">
+                                            <h2 class="fw-bolder mb-0 text-success" id="cohortPassingThresholdPct">--%</h2>
+                                            <span class="text-muted small">Cohort Passing Rate</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 10px; border-radius: 6px;">
+                                            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" id="cohortThresholdProgressBar" style="width: 0%"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>Remediation (&lt;50%)</span>
+                                            <span class="fw-bold text-primary">Passing (60%)</span>
+                                            <span>Mastery (75%)</span>
+                                        </div>
+                                    </div>
+                                    <div class="pt-2 border-top">
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>Threshold-Cleared Learners:</span>
+                                            <span class="fw-bold text-dark" id="cohortThresholdClearedRatio">0 / 0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Thread & Adaptive Remediation -->
+                            <div class="col-lg-4 col-md-12">
+                                <div class="p-3.5 rounded-4 bg-light border h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-uppercase fw-bold text-muted" style="font-size:0.75rem;">3. Performance Thread & Remediation</span>
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2 py-0.5 small">Adaptive Trace</span>
+                                        </div>
+                                        <div class="d-flex align-items-baseline gap-2 mb-1">
+                                            <h5 class="fw-bolder mb-0 text-dark" id="primaryClassBottleneckText">Analyzing...</h5>
+                                        </div>
+                                        <small class="text-danger d-block mb-2" id="primaryClassBottleneckSub">Identified primary class competency deficit</small>
+                                        <p class="small text-muted mb-2">
+                                            Evaluation thread automatically routes learners with threshold deficits into targeted remedial practice.
+                                        </p>
+                                    </div>
+                                    <div class="pt-2 border-top">
+                                        <button onclick="document.getElementById('aiInsightsBtn').click()" class="btn btn-sm btn-outline-primary w-100 rounded-pill fw-bold">
+                                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Trigger Adaptive Remediation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Trend Line Chart (Attempts & Progression Timeline) -->
+                        <div class="border rounded-4 p-3 bg-white">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary p-2 rounded-3"><i class="fa-solid fa-chart-line"></i></span>
+                                    <h6 class="fw-bold text-dark mb-0 text-uppercase" style="letter-spacing:0.5px; font-size: 0.85rem;">Cohort Performance Trend & Milestone Progression</h6>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 small flex-wrap">
+                                    <span class="text-muted"><i class="fa-solid fa-circle text-primary me-1" style="font-size:0.6rem;"></i>Weighted Score Trend</span>
+                                    <span class="text-muted"><i class="fa-solid fa-circle text-secondary me-1" style="font-size:0.6rem;"></i>Raw Accuracy</span>
+                                    <span class="text-success fw-bold"><i class="fa-solid fa-minus me-1"></i>60% Passing Benchmark</span>
+                                </div>
+                            </div>
+                            <div style="position: relative; height: 200px;">
+                                <canvas id="performanceTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- General Stats Cards -->
                 <div class="row g-4 mb-4" id="generalStatsBox">
                     <div class="col-12 text-center text-muted">
@@ -505,7 +621,10 @@
                 <div class="modal-body p-4">
                     <div class="d-flex border-bottom mb-4">
                         <button class="btn btn-link nav-link active fw-bold text-primary pb-2 me-4 border-bottom border-primary border-3" id="modal-tab-overview" onclick="switchModalTab('overview')" style="text-decoration: none; border-radius: 0; border: none; background: none;">Overview</button>
-                        <button class="btn btn-link nav-link fw-bold text-muted pb-2" id="modal-tab-skills" onclick="switchModalTab('skills')" style="text-decoration: none; border-radius: 0; border: none; background: none;">Cognitive & Skills Breakdown</button>
+                        <button class="btn btn-link nav-link fw-bold text-muted pb-2 me-4" id="modal-tab-skills" onclick="switchModalTab('skills')" style="text-decoration: none; border-radius: 0; border: none; background: none;">Cognitive & Skills Breakdown</button>
+                        <button class="btn btn-link nav-link fw-bold text-muted pb-2" id="modal-tab-thread" onclick="switchModalTab('thread')" style="text-decoration: none; border-radius: 0; border: none; background: none;">
+                            <i class="fa-solid fa-route me-1.5 text-primary"></i> Performance Thread & Thresholds
+                        </button>
                     </div>
 
                     <div id="modal-content-overview">
@@ -550,6 +669,71 @@
                                 <h6 class="fw-bold text-muted mb-3 text-uppercase" style="font-size: 0.8rem;">Core Competencies Mastery</h6>
                                 <div style="position: relative; height: 155px;">
                                     <canvas id="studentCompetencyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Thread & Thresholds Content -->
+                    <div id="modal-content-thread" class="d-none">
+                        <!-- 1. Weighted Scoring Breakdown -->
+                        <div class="card border rounded-4 mb-3 p-3.5 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">
+                                        <i class="fa-solid fa-scale-balanced text-primary me-2"></i> 1. Weighted Scoring Model (By Difficulty Tier)
+                                    </h6>
+                                    <small class="text-muted">Questions are weighted based on cognitive demand and difficulty tier.</small>
+                                </div>
+                                <span class="badge bg-primary text-white rounded-pill px-3 py-1.5 fw-bold" id="studentThreadWpsBadge">WPS: --%</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered bg-white small mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Difficulty Tier</th>
+                                            <th>Cognitive Domain</th>
+                                            <th class="text-center">Assigned Weight</th>
+                                            <th class="text-center">Score Ratio</th>
+                                            <th class="text-center">Raw Accuracy</th>
+                                            <th class="text-center">Weighted Contribution</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentThreadWeightTbody">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2. Cumulative Threshold Progression -->
+                        <div class="card border rounded-4 mb-3 p-3.5 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">
+                                        <i class="fa-solid fa-stairs text-success me-2"></i> 2. Cumulative Threshold Progression (MPL Passing Gates)
+                                    </h6>
+                                    <small class="text-muted">Measures whether the student maintains passing proficiency as assessment difficulty builds cumulatively.</small>
+                                </div>
+                                <span class="badge" id="studentThreadThresholdBadge">Status</span>
+                            </div>
+                            <div id="studentThreadStagesContainer" class="row g-2 text-center mb-2">
+                                <!-- Stage milestone cards populated dynamically -->
+                            </div>
+                            <div class="p-2.5 rounded-3 bg-white border small text-muted" id="studentThreadThresholdExplanation">
+                                <!-- Explanation text -->
+                            </div>
+                        </div>
+
+                        <!-- 3. Performance Thread & Remediation Trace -->
+                        <div class="card border rounded-4 p-3.5 bg-light">
+                            <h6 class="fw-bold text-dark mb-1">
+                                <i class="fa-solid fa-route text-info me-2"></i> 3. Performance Evaluation Thread & Remediation Chain
+                            </h6>
+                            <small class="text-muted d-block mb-3">Clear traceable pipeline connecting telemetry, criteria, weights, thresholds, and assigned remediation.</small>
+                            <div class="p-3 bg-white rounded-3 border">
+                                <div class="d-flex flex-column gap-2" id="studentPerformanceThreadTrace">
+                                    <!-- Dynamic thread breadcrumb steps -->
                                 </div>
                             </div>
                         </div>
