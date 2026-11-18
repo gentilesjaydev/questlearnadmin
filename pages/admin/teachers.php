@@ -96,11 +96,12 @@
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold mb-1">Password <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="password" id="teacherRegPassword" class="form-control" placeholder="Minimum 6 characters" minlength="6" required style="border-radius: 10px 0 0 10px;">
+                                <input type="password" id="teacherRegPassword" class="form-control" value="teacher123" placeholder="Minimum 6 characters" minlength="6" required style="border-radius: 10px 0 0 10px;">
                                 <button class="btn btn-outline-secondary" type="button" id="toggleTeacherRegPassword" style="border-radius: 0 10px 10px 0;">
                                     <i class="fa-solid fa-eye" id="toggleTeacherRegPasswordIcon"></i>
                                 </button>
                             </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Default initial password is prefilled as <code>teacher123</code>. You can keep or change this.</small>
                         </div>
 
                         <div class="mb-3">

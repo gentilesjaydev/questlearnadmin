@@ -104,8 +104,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light border me-1 rounded-3 shadow-sm text-warning" 
-                                            onclick="resetTeacherPassword('${email}', '${name.replace(/'/g, "\\'")}')" 
-                                            title="Send Password Reset Email">
+                                            onclick="resetTeacherPassword('${key}', '${email}', '${name.replace(/'/g, "\\'")}')" 
+                                            title="Reset Password to teacher123">
                                             <i class="fa-solid fa-key"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light border rounded-3 shadow-sm text-danger" 
@@ -323,29 +323,45 @@ window.editTeacher = function(key, fName, lName, email, school, grade, section, 
     });
 };
 
-// ── Password Reset Operation ──────────────────────────────────────────────
-window.resetTeacherPassword = function(email, name) {
+// ── Password Reset Operation (Direct Admin Reset to teacher123) ──────────
+window.resetTeacherPassword = function(key, email, name) {
     Swal.fire({
-        title: 'Reset Password?',
-        html: `Send an official Firebase password reset link to <strong>${name}</strong> at <code>${email}</code>?`,
-        icon: 'question',
+        title: 'Reset to Default Password?',
+        html: `
+            <div class="text-start">
+                <p class="mb-2">Reset password for <strong>${name}</strong>?</p>
+                <div class="p-3 bg-light rounded-3 border text-center my-3">
+                    <div class="text-muted small mb-1">New Default Password:</div>
+                    <div class="fs-4 fw-bold text-primary font-monospace">teacher123</div>
+                </div>
+                <div class="alert alert-info border-0 rounded-3 p-2 small mb-0">
+                    <i class="fa-solid fa-user-shield me-1"></i> <strong>No email needed.</strong> You can share this default password with the teacher privately.
+                </div>
+            </div>
+        `,
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#eab308',
-        confirmButtonText: '<i class="fa-solid fa-paper-plane me-1"></i> Send Reset Link'
+        confirmButtonColor: '#4f46e5',
+        confirmButtonText: '<i class="fa-solid fa-key me-1"></i> Reset to teacher123'
     }).then((result) => {
         if (result.isConfirmed) {
-            firebase.auth().sendPasswordResetEmail(email)
-                .then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Reset Email Sent!',
-                        text: `A password reset link has been dispatched to ${email}.`,
-                        confirmButtonColor: '#4f46e5'
-                    });
-                })
-                .catch(err => {
-                    Swal.fire('Error', err.message, 'error');
+            db.ref('users/' + key).update({
+                defaultPassword: 'teacher123',
+                passwordResetAt: Date.now()
+            }).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Password Set to teacher123!',
+                    html: `
+                        <p class="mb-2">The default password for <strong>${name}</strong> is:</p>
+                        <div class="p-2 bg-light border rounded fw-bold text-primary fs-5 font-monospace mb-2">teacher123</div>
+                        <small class="text-muted">You can now give this password to the teacher privately.</small>
+                    `,
+                    confirmButtonColor: '#4f46e5'
                 });
+            }).catch(err => {
+                Swal.fire('Error', err.message, 'error');
+            });
         }
     });
 };

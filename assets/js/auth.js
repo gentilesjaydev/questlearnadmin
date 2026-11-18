@@ -15,6 +15,37 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Forgot Password Handler (No email: directs teacher to admin for default password)
+    const forgotLink = document.querySelector('.forgot-link');
+    if (forgotLink) {
+        forgotLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Forgot Password?',
+                    html: `
+                        <div class="text-start">
+                            <p class="mb-3 text-secondary">Automated email reset is disabled for institutional account privacy.</p>
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="d-flex align-items-center mb-1 text-primary fw-bold">
+                                    <i class="fa-solid fa-user-shield me-2"></i> Contact Your Administrator
+                                </div>
+                                <p class="small text-muted mb-0">
+                                    Please notify your <strong>School Administrator</strong> to reset your access. The administrator will grant and provide you with the standard password (<code>teacher123</code>) privately.
+                                </p>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonColor: '#4f46e5',
+                    confirmButtonText: '<i class="fa-solid fa-check me-1"></i> Understood'
+                });
+            } else {
+                alert("Please contact your School Administrator to reset your password to the default teacher password.");
+            }
+        });
+    }
+
     if(loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
