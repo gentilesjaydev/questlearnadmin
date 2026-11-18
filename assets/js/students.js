@@ -282,41 +282,24 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Toggle custom section input in modal
-    if (regSectionSelect && regSectionCustom) {
-        regSectionSelect.addEventListener('change', function() {
-            if (this.value === 'Custom') {
-                regSectionCustom.classList.remove('d-none');
-                regSectionCustom.required = true;
-                regSectionCustom.focus();
-            } else {
-                regSectionCustom.classList.add('d-none');
-                regSectionCustom.required = false;
-            }
-        });
-    }
-
-    // Update registration section dropdown when grade level changes
-    function updateRegSectionsDropdown() {
-        if (!regGradeSelect || !regSectionSelect) return;
-        const selGrade = regGradeSelect.value;
-        const sections = availableGradesMap[selGrade] || ['Acacia', 'Mabini', 'Rizal'];
-        
+    // Update registration section dropdown from Firebase sections/
+    function populateSectionDropdown(sectionNames) {
+        if (!regSectionSelect) return;
+        const prevVal = regSectionSelect.value;
         regSectionSelect.innerHTML = '<option value="" disabled selected>Select Section...</option>';
-        sections.forEach(sName => {
+        sectionNames.forEach(sName => {
             const opt = document.createElement('option');
             opt.value = sName;
-            opt.textContent = sName;
+            opt.textContent = 'Section ' + sName;
             regSectionSelect.appendChild(opt);
         });
-        const customOpt = document.createElement('option');
-        customOpt.value = "Custom";
-        customOpt.textContent = "+ Type custom section";
-        regSectionSelect.appendChild(customOpt);
-    }
-
-    if (regGradeSelect) {
-        regGradeSelect.addEventListener('change', updateRegSectionsDropdown);
+        // Restore previous selection or auto-select teacher's section
+        const teacherSec = sessionStorage.getItem('teacherSection');
+        if (teacherSec && teacherSec !== 'All') {
+            regSectionSelect.value = teacherSec;
+        } else if (prevVal && Array.from(regSectionSelect.options).some(o => o.value === prevVal)) {
+            regSectionSelect.value = prevVal;
+        }
     }
 
     // Live section filter listener
@@ -333,76 +316,39 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // Load available Grade 6 sections from Firebase Realtime Database
-    db.ref('grades').on('value', (snapshot) => {
-        const gradesData = snapshot.val() || {};
-        let grade6Sections = [];
-        
-        Object.keys(gradesData).forEach(gKey => {
-            const gObj = gradesData[gKey];
-            const gradeName = (gObj.name || gKey).toLowerCase();
-            
-            // Only extract sections for Grade 6
-            if (gradeName.includes('6') || gradeName.includes('six')) {
-                if (gObj.sections) {
-                    Object.keys(gObj.sections).forEach(sKey => {
-                        const sObj = gObj.sections[sKey];
-                        const secName = sObj.name || sKey;
-                        if (!grade6Sections.includes(secName)) {
-                            grade6Sections.push(secName);
-                        }
-                    });
-                }
-            }
-        });
+    // Load sections from Firebase sections/ path (source of truth)
+    db.ref('sections').on('value', (snapshot) => {
+        const sectionsData = snapshot.val() || {};
+        let sectionNames = Object.values(sectionsData)
+            .filter(s => s && s.name)
+            .map(s => s.name)
+            .sort();
 
-        // Default sections if none found in DB yet
-        if (grade6Sections.length === 0) {
-            grade6Sections = ['Acacia', 'Mabini', 'Rizal', 'Sampaguita'];
+        // Fallback defaults if Firebase sections/ is empty
+        if (sectionNames.length === 0) {
+            sectionNames = ['Acacia', 'Apitong', 'Mahogany', 'Mabini', 'Rizal'];
         }
 
-        // Also include any section currently present on active students
-        allStudentsList.forEach(s => {
-            if (s.section && s.section !== 'Unassigned' && !grade6Sections.includes(s.section)) {
-                grade6Sections.push(s.section);
-            }
-        });
+        // Cache globally so editStudent() can use the same list
+        window.availableSectionsCache = sectionNames;
 
         // Populate toolbar section filter dropdown
         if (sectionFilterSelect) {
             const currentSelected = sectionFilterSelect.value;
             sectionFilterSelect.innerHTML = '<option value="ALL">All Grade 6 Sections</option>';
-            grade6Sections.forEach(sec => {
+            sectionNames.forEach(sec => {
                 const opt = document.createElement('option');
                 opt.value = sec;
                 opt.textContent = `Section ${sec}`;
                 sectionFilterSelect.appendChild(opt);
             });
-
             if (currentSelected && Array.from(sectionFilterSelect.options).some(o => o.value === currentSelected)) {
                 sectionFilterSelect.value = currentSelected;
             }
         }
 
         // Populate registration modal section dropdown
-        if (regSectionSelect) {
-            regSectionSelect.innerHTML = '<option value="" disabled selected>Select Section...</option>';
-            grade6Sections.forEach(sec => {
-                const opt = document.createElement('option');
-                opt.value = sec;
-                opt.textContent = `Section ${sec}`;
-                regSectionSelect.appendChild(opt);
-            });
-            const customOpt = document.createElement('option');
-            customOpt.value = 'Custom';
-            customOpt.textContent = '+ Type custom section';
-            regSectionSelect.appendChild(customOpt);
-
-            const teacherSec = sessionStorage.getItem('teacherSection');
-            if (teacherSec && teacherSec !== 'All') {
-                regSectionSelect.value = teacherSec;
-            }
-        }
+        populateSectionDropdown(sectionNames);
     });
 
     // Handle Student Registration Form Submission (FR 1)
@@ -416,11 +362,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const grade = regGradeSelect ? regGradeSelect.value : 'Grade 6';
-            let section = regSectionSelect ? regSectionSelect.value : 'Acacia';
-            
-            if (section === 'Custom' && regSectionCustom) {
-                section = regSectionCustom.value.trim();
-            }
+            const section = regSectionSelect ? regSectionSelect.value : '';
 
             if (!section) {
                 if (registerErrorAlert && registerErrorMsg) {
@@ -480,7 +422,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (modalInst) modalInst.hide();
 
                 registerStudentForm.reset();
-                if (regSectionCustom) regSectionCustom.classList.add('d-none');
+                populateSectionDropdown(window.availableSectionsCache || []);
 
                 Swal.fire({
                     icon: 'success',
@@ -1378,6 +1320,12 @@ window.deleteStudent = function(key, name) {
 
 window.editStudent = function(key, fName, lName, xp, section) {
     const currentSection = section || 'Acacia';
+    const sections = window.availableSectionsCache || ['Acacia', 'Apitong', 'Mahogany', 'Mabini', 'Rizal'];
+
+    // Build section <select> options
+    const sectionOptions = sections.map(s =>
+        `<option value="${s}" ${s === currentSection ? 'selected' : ''}>Section ${s}</option>`
+    ).join('');
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -1394,8 +1342,10 @@ window.editStudent = function(key, fName, lName, xp, section) {
                             <input id="edit-grade" class="swal2-input m-0 w-100 bg-light" value="Grade 6" readonly>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-muted small fw-bold mb-1">Grade 6 Section</label>
-                            <input id="edit-section" class="swal2-input m-0 w-100" value="${currentSection}" placeholder="e.g. Acacia">
+                            <label class="form-label text-muted small fw-bold mb-1">Class Section <span class="text-danger">*</span></label>
+                            <select id="edit-section" class="form-select" style="border-radius:8px; padding:10px 14px; font-size:0.95rem;">
+                                ${sectionOptions}
+                            </select>
                         </div>
                     </div>
                     <label class="form-label text-muted small fw-bold mb-1">Total XP</label>
@@ -1412,9 +1362,9 @@ window.editStudent = function(key, fName, lName, xp, section) {
                     firstName: document.getElementById('edit-fname').value.trim(),
                     lastName: document.getElementById('edit-lname').value.trim(),
                     grade: 'Grade 6',
-                    section: document.getElementById('edit-section').value.trim() || 'Acacia',
+                    section: document.getElementById('edit-section').value || currentSection,
                     xp: parseInt(document.getElementById('edit-xp').value) || 0
-                }
+                };
             }
         }).then((result) => {
             if (result.isConfirmed) {
