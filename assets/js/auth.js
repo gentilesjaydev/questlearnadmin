@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     if(loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
@@ -59,63 +59,106 @@ document.addEventListener("DOMContentLoaded", function() {
             loginBtn.disabled = true;
             loginError.classList.add('d-none');
 
-            // Firebase Authentication Process
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    
-                    // Fetch user role from Realtime Database
-                    db.ref('users/' + user.uid).once('value').then((snapshot) => {
-                        if(snapshot.exists()) {
-                            const userData = snapshot.val();
-                            const role = userData.role || 'teacher'; // Expected: 'admin' or 'teacher'
-                            const fName = userData.firstName || '';
-                            const lName = userData.lastName || '';
-                            const displayName = (fName + ' ' + lName).trim() || userData.displayName || userData.name || user.email;
-                            
-                            // Save role & scoped class credentials for session
-                            sessionStorage.setItem('userRole', role);
-                            sessionStorage.setItem('userName', displayName);
-                            sessionStorage.setItem('userEmail', user.email);
-                            sessionStorage.setItem('userUid', user.uid);
-                            sessionStorage.setItem('teacherGrade', userData.grade || '');
-                            sessionStorage.setItem('teacherSection', userData.section || '');
-                            sessionStorage.setItem('teacherSchool', userData.school || '');
-                            sessionStorage.setItem('teacherDept', userData.department || '');
-                            
-                            // Smart Routing based on Role
-                            if(role === 'admin' || role === 'teacher') {
-                                if(typeof Swal !== 'undefined') {
-                                    const isAdmin = role === 'admin';
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: isAdmin ? 'Welcome back, Admin! 👑' : 'Welcome back, Teacher! 🎓',
-                                        text: `Good to see you, ${displayName}!`,
-                                        showConfirmButton: false,
-                                        timer: 1800,
-                                        timerProgressBar: true
-                                    }).then(() => {
-                                        window.location.href = isAdmin ? '../../pages/admin/dashboard' : '../../index';
-                                    });
-                                } else {
-                                    window.location.href = role === 'admin' ? '../../pages/admin/dashboard' : '../../index';
-                                }
+            try {
+                let userCredential = null;
+
+                // 1. Attempt standard Firebase sign-in
+                try {
+                    userCredential = await auth.signInWithEmailAndPassword(email, password);
+                } catch (signInErr) {
+                    // Check if this is an unregistered/legacy account attempting first-time login
+                    if (signInErr.code === 'auth/invalid-login-credentials' || signInErr.code === 'auth/user-not-found') {
+                        try {
+                            // Attempt to initialize Auth account with the entered credentials
+                            userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                        } catch (createErr) {
+                            if (createErr.code === 'auth/email-already-in-use') {
+                                throw new Error("Incorrect password. Please check your password or contact your administrator.");
                             } else {
-                                throw new Error("Unauthorized role detected. Access Denied.");
+                                throw signInErr;
                             }
-                        } else {
-                            throw new Error("No database record found for this account. Contact System Admin.");
                         }
-                    }).catch(err => {
-                        auth.signOut();
-                        showError(err.message);
+                    } else {
+                        throw signInErr;
+                    }
+                }
+
+                const user = userCredential.user;
+
+                // 2. Fetch user profile from Realtime Database
+                let snapshot = await db.ref('users/' + user.uid).once('value');
+                let userData = snapshot.val();
+
+                // If not found by UID, search by email (for legacy push-ID teacher records)
+                if (!userData) {
+                    const allUsersSnap = await db.ref('users').once('value');
+                    const allUsers = allUsersSnap.val() || {};
+                    let legacyKey = null;
+
+                    Object.keys(allUsers).forEach(k => {
+                        const u = allUsers[k];
+                        if (u && u.email && u.email.toLowerCase() === email.toLowerCase()) {
+                            legacyKey = k;
+                            userData = u;
+                        }
                     });
-                })
-                .catch((error) => {
-                    // Show exactly why Firebase rejected the login to help debug
-                    showError("Firebase Error: " + error.message);
-                });
-                
+
+                    if (userData && legacyKey) {
+                        // Migrate legacy record to the proper Firebase Auth UID
+                        userData.uid = user.uid;
+                        await db.ref('users/' + user.uid).set(userData);
+                        if (legacyKey !== user.uid) {
+                            await db.ref('users/' + legacyKey).remove();
+                        }
+                    }
+                }
+
+                // If still no database record found, account is unauthorized
+                if (!userData) {
+                    await auth.signOut();
+                    throw new Error("No authorized school record found for this email. Contact your administrator.");
+                }
+
+                const role = userData.role || 'teacher'; // Expected: 'admin' or 'teacher'
+                const fName = userData.firstName || '';
+                const lName = userData.lastName || '';
+                const displayName = (fName + ' ' + lName).trim() || userData.displayName || userData.name || user.email;
+
+                // Save role & scoped class credentials for session
+                sessionStorage.setItem('userRole', role);
+                sessionStorage.setItem('userName', displayName);
+                sessionStorage.setItem('userEmail', user.email);
+                sessionStorage.setItem('userUid', user.uid);
+                sessionStorage.setItem('teacherGrade', userData.grade || '');
+                sessionStorage.setItem('teacherSection', userData.section || '');
+                sessionStorage.setItem('teacherSchool', userData.school || '');
+                sessionStorage.setItem('teacherDept', userData.department || '');
+
+                // Smart Routing based on Role
+                if (role === 'admin' || role === 'teacher') {
+                    if (typeof Swal !== 'undefined') {
+                        const isAdmin = role === 'admin';
+                        Swal.fire({
+                            icon: 'success',
+                            title: isAdmin ? 'Welcome back, Admin! 👑' : 'Welcome back, Teacher! 🎓',
+                            text: `Good to see you, ${displayName}!`,
+                            showConfirmButton: false,
+                            timer: 1800,
+                            timerProgressBar: true
+                        }).then(() => {
+                            window.location.href = isAdmin ? '../../pages/admin/dashboard' : '../../index';
+                        });
+                    } else {
+                        window.location.href = role === 'admin' ? '../../pages/admin/dashboard' : '../../index';
+                    }
+                } else {
+                    await auth.signOut();
+                    throw new Error("Unauthorized role detected. Access Denied.");
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+
             function showError(msg) {
                 loginError.textContent = msg;
                 loginError.classList.remove('d-none');

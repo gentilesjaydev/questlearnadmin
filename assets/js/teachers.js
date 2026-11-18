@@ -394,12 +394,42 @@ window.resetTeacherPassword = function(key, email, name) {
         showCancelButton: true,
         confirmButtonColor: '#4f46e5',
         confirmButtonText: '<i class="fa-solid fa-key me-1"></i> Reset to teacher123'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            db.ref('users/' + key).update({
-                defaultPassword: 'teacher123',
-                passwordResetAt: Date.now()
-            }).then(() => {
+            try {
+                // Initialize secondary app to create auth account if missing
+                let secApp;
+                try {
+                    secApp = firebase.initializeApp(firebaseConfig, "PasswordResetWorker_" + Date.now());
+                } catch(e) {
+                    secApp = firebase.app();
+                }
+
+                try {
+                    // If legacy account never had Firebase Auth, create it now with teacher123
+                    const cred = await secApp.auth().createUserWithEmailAndPassword(email, 'teacher123');
+                    if (cred && cred.user) {
+                        const newUid = cred.user.uid;
+                        const snap = await db.ref('users/' + key).once('value');
+                        const data = snap.val() || {};
+                        data.uid = newUid;
+                        data.defaultPassword = 'teacher123';
+                        data.passwordResetAt = Date.now();
+                        await db.ref('users/' + newUid).set(data);
+                        if (key !== newUid) {
+                            await db.ref('users/' + key).remove();
+                        }
+                    }
+                } catch (authErr) {
+                    // If already exists in Auth, just record defaultPassword in DB
+                    await db.ref('users/' + key).update({
+                        defaultPassword: 'teacher123',
+                        passwordResetAt: Date.now()
+                    });
+                }
+
+                try { await secApp.delete(); } catch(e) {}
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Password Set to teacher123!',
@@ -410,9 +440,9 @@ window.resetTeacherPassword = function(key, email, name) {
                     `,
                     confirmButtonColor: '#4f46e5'
                 });
-            }).catch(err => {
+            } catch (err) {
                 Swal.fire('Error', err.message, 'error');
-            });
+            }
         }
     });
 };
