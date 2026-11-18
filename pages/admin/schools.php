@@ -26,12 +26,15 @@
                         <h2 class="fw-bolder mb-1" style="color: var(--text-main); letter-spacing: -1.5px; font-size: 2.2rem;">School & Section Management</h2>
                         <p class="text-muted" style="font-size: 1.05rem; font-weight: 500;">Configure institutional campuses and Grade 6 advisory sections for teacher assignments.</p>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-wrap">
                         <button class="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addSchoolModal">
                             <i class="fa-solid fa-school"></i> Add School
                         </button>
                         <button class="btn btn-outline-primary px-4 py-2 rounded-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#addSectionModal">
                             <i class="fa-solid fa-layer-group"></i> Add Section
+                        </button>
+                        <button class="btn btn-outline-secondary px-4 py-2 rounded-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="seedDefaults()" title="Seed default school and sections">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Seed Defaults
                         </button>
                     </div>
                 </div>
@@ -195,3 +198,4 @@
     <script src="<?php echo $base; ?>assets/js/schools.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+

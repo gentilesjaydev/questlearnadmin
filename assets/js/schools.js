@@ -27,44 +27,87 @@ document.addEventListener("DOMContentLoaded", function() {
             renderSections();
         });
 
-        // 2. Listen to Schools & auto-seed if empty
+        // 2. Listen to Schools
         db.ref('schools').on('value', (snap) => {
-            const data = snap.val();
-            if (!data) {
-                // Auto seed initial school
-                const initialSchool = {
-                    name: 'Central Elementary School',
-                    district: 'District I, Division of Davao City',
-                    createdAt: Date.now()
-                };
-                db.ref('schools').push(initialSchool);
-                allSchools = {};
-            } else {
-                allSchools = data;
-                renderSchools();
-            }
+            allSchools = snap.val() || {};
+            renderSchools();
+        }, (err) => {
+            console.error('schools read error:', err);
+            renderSchools();
         });
 
-        // 3. Listen to Sections & auto-seed if empty
+        // 3. Listen to Sections
         db.ref('sections').on('value', (snap) => {
-            const data = snap.val();
-            if (!data) {
-                // Auto seed initial Grade 6 sections
-                const initialSections = ['Apitong', 'Acacia', 'Mahogany', 'Mabini', 'Rizal'];
-                initialSections.forEach(sName => {
-                    db.ref('sections').push({
-                        name: sName,
-                        grade: 'Grade 6',
-                        createdAt: Date.now()
-                    });
-                });
-                allSections = {};
-            } else {
-                allSections = data;
-                renderSections();
-            }
+            allSections = snap.val() || {};
+            renderSections();
+        }, (err) => {
+            console.error('sections read error:', err);
+            renderSections();
         });
     });
+
+    // ── Seed Defaults ───────────────────────────────────────────────────────
+    window.seedDefaults = function() {
+        Swal.fire({
+            title: 'Seed Default Data?',
+            html: `This will add:<br><b>1 school</b> (Central Elementary School)<br><b>5 sections</b> (Apitong, Acacia, Mahogany, Mabini, Rizal)`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#4f46e5',
+            confirmButtonText: 'Yes, seed now'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            const writes = [];
+
+            // Only seed schools if currently empty
+            if (Object.keys(allSchools).length === 0) {
+                writes.push(
+                    db.ref('schools').push({
+                        name: 'Central Elementary School',
+                        district: 'District I, Division of Davao City',
+                        createdAt: Date.now()
+                    })
+                );
+            }
+
+            // Only seed sections if currently empty
+            if (Object.keys(allSections).length === 0) {
+                ['Apitong', 'Acacia', 'Mahogany', 'Mabini', 'Rizal'].forEach(sName => {
+                    writes.push(
+                        db.ref('sections').push({
+                            name: sName,
+                            grade: 'Grade 6',
+                            createdAt: Date.now()
+                        })
+                    );
+                });
+            }
+
+            if (writes.length === 0) {
+                Swal.fire('Already seeded', 'Schools and sections are already present.', 'info');
+                return;
+            }
+
+            Promise.all(writes)
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Defaults Seeded!',
+                        text: 'School and section data has been added to Firebase.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Firebase Write Blocked',
+                        html: `<p>${err.message}</p><p class="mt-2 text-muted small">Go to <b>Firebase Console → Realtime Database → Rules</b> and add:<br><code>"schools": {".read":"auth!=null",".write":"auth!=null"}</code></p>`
+                    });
+                });
+        });
+    };
 
     // ── Render Schools Table ────────────────────────────────────────────────
     function renderSchools() {
@@ -81,7 +124,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 <tr>
                     <td colspan="4" class="text-center py-5 text-muted">
                         <i class="fa-solid fa-school-circle-xmark fa-2x mb-3 text-secondary opacity-50"></i>
-                        <p class="mb-0">No schools registered yet. Click <strong>Add School</strong> above.</p>
+                        <p class="mb-2">No schools registered yet. Click <strong>Add School</strong> above.</p>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="seedDefaults()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Seed Defaults
+                        </button>
                     </td>
                 </tr>`;
             return;
@@ -146,7 +192,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 <tr>
                     <td colspan="3" class="text-center py-5 text-muted">
                         <i class="fa-solid fa-layer-group fa-2x mb-3 text-secondary opacity-50"></i>
-                        <p class="mb-0">No sections added yet.</p>
+                        <p class="mb-2">No sections added yet.</p>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="seedDefaults()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Seed Defaults
+                        </button>
                     </td>
                 </tr>`;
             return;
@@ -337,3 +386,4 @@ window.deleteSection = function(key, name) {
         }
     });
 };
+
