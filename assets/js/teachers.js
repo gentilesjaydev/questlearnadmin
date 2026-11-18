@@ -76,7 +76,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                             <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=818cf8&color=ffffff&bold=true" class="rounded-circle me-3 shadow-sm" width="38" height="38">
                                             <div>
                                                 <div>${name}</div>
-                                                <small class="text-muted fw-normal">${dept}</small>
                                             </div>
                                         </div>
                                     </td>
@@ -281,7 +280,7 @@ window.editTeacher = function(key, fName, lName, email, school, grade, section, 
                     <label class="form-label text-muted small fw-bold mb-1">Assigned School</label>
                     <input id="edit-school" class="swal2-input m-0 w-100" value="${school || 'Central Elementary School'}">
                 </div>
-                <div class="row g-2 mb-2">
+                <div class="row g-2 mb-0">
                     <div class="col-6">
                         <label class="form-label text-muted small fw-bold mb-1">Grade Level</label>
                         <input id="edit-grade" class="swal2-input m-0 w-100" value="${grade || 'Grade 6'}">
@@ -290,10 +289,6 @@ window.editTeacher = function(key, fName, lName, email, school, grade, section, 
                         <label class="form-label text-muted small fw-bold mb-1">Assigned Section</label>
                         <input id="edit-section" class="swal2-input m-0 w-100" value="${section || 'Apitong'}">
                     </div>
-                </div>
-                <div class="mb-0">
-                    <label class="form-label text-muted small fw-bold mb-1">Department</label>
-                    <input id="edit-dept" class="swal2-input m-0 w-100" value="${dept || 'English'}">
                 </div>
             </div>
         `,
@@ -308,7 +303,7 @@ window.editTeacher = function(key, fName, lName, email, school, grade, section, 
                 school: document.getElementById('edit-school').value.trim(),
                 grade: document.getElementById('edit-grade').value.trim(),
                 section: document.getElementById('edit-section').value.trim(),
-                department: document.getElementById('edit-dept').value.trim()
+                department: 'English'
             };
         }
     }).then((result) => {

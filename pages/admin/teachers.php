@@ -133,10 +133,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-2">
-                            <label class="form-label text-muted small fw-bold mb-1">Department / Subject</label>
-                            <input type="text" id="teacherRegDept" class="form-control" placeholder="e.g. English / NATG6" value="English" style="border-radius: 10px;">
-                        </div>
+                        <input type="hidden" id="teacherRegDept" value="English">
 
                         <div class="p-3 bg-light rounded-3 border small text-muted mt-3">
                             <div class="d-flex align-items-center mb-1 text-primary fw-bold">
