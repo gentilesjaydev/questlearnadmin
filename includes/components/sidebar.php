@@ -57,6 +57,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li class="<?php echo ($current_page == 'teachers.php') ? 'active' : ''; ?>">
                 <a href="<?php echo $base; ?>pages/admin/teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
             </li>
+            <li class="<?php echo ($current_page == 'schools.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $base; ?>pages/admin/schools"><i class="fa-solid fa-school"></i> Manage Schools & Sections</a>
+            </li>
             <li class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">
                 <a href="<?php echo $base; ?>pages/admin/settings"><i class="fa-solid fa-gear"></i> System Settings</a>
             </li>

@@ -5,6 +5,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     const tableBody = document.getElementById('teachersTableBody');
     const registerForm = document.getElementById('registerTeacherForm');
+    const regSchoolSelect = document.getElementById('teacherRegSchoolSelect');
     const regSectionSelect = document.getElementById('teacherRegSectionSelect');
     const regSectionCustom = document.getElementById('teacherRegSectionCustom');
     const togglePasswordBtn = document.getElementById('toggleTeacherRegPassword');
@@ -13,6 +14,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const errorAlert = document.getElementById('teacherRegisterErrorAlert');
     const errorMsg = document.getElementById('teacherRegisterErrorMsg');
     const submitBtn = document.getElementById('submitTeacherRegisterBtn');
+
+    window.availableSchoolsCache = ['Central Elementary School'];
+    window.availableSectionsCache = ['Apitong', 'Acacia', 'Mahogany', 'Mabini', 'Rizal'];
 
     // ── Toggle Password Visibility ──────────────────────────────────────────
     if (togglePasswordBtn && regPasswordInput) {
@@ -45,6 +49,42 @@ document.addEventListener("DOMContentLoaded", function() {
     if (tableBody) {
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                // Populate Schools Dropdown from Firebase
+                db.ref('schools').on('value', (snap) => {
+                    const data = snap.val() || {};
+                    const keys = Object.keys(data);
+                    window.availableSchoolsCache = keys.length ? keys.map(k => data[k].name) : ['Central Elementary School'];
+                    if (regSchoolSelect) {
+                        regSchoolSelect.innerHTML = '';
+                        window.availableSchoolsCache.forEach(sName => {
+                            const opt = document.createElement('option');
+                            opt.value = sName;
+                            opt.textContent = sName;
+                            regSchoolSelect.appendChild(opt);
+                        });
+                    }
+                });
+
+                // Populate Sections Dropdown from Firebase
+                db.ref('sections').on('value', (snap) => {
+                    const data = snap.val() || {};
+                    const keys = Object.keys(data);
+                    window.availableSectionsCache = keys.length ? keys.map(k => data[k].name) : ['Apitong', 'Acacia', 'Mahogany', 'Mabini', 'Rizal'];
+                    if (regSectionSelect) {
+                        regSectionSelect.innerHTML = '<option value="" disabled selected>Select Section...</option>';
+                        window.availableSectionsCache.forEach(sName => {
+                            const opt = document.createElement('option');
+                            opt.value = sName;
+                            opt.textContent = `Section ${sName}`;
+                            regSectionSelect.appendChild(opt);
+                        });
+                        const customOpt = document.createElement('option');
+                        customOpt.value = 'Custom';
+                        customOpt.textContent = '+ Type custom section';
+                        regSectionSelect.appendChild(customOpt);
+                    }
+                });
+
                 const usersRef = db.ref('users');
                 
                 usersRef.on('value', (snapshot) => {
@@ -149,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const lName = document.getElementById('teacherRegLastName').value.trim();
             const email = document.getElementById('teacherRegEmail').value.trim();
             const password = regPasswordInput.value;
-            const school = (document.getElementById('teacherRegSchool') ? document.getElementById('teacherRegSchool').value.trim() : '') || 'Central Elementary School';
+            const school = (regSchoolSelect ? regSchoolSelect.value : '') || 'Central Elementary School';
             const grade = document.getElementById('teacherRegGradeSelect').value;
             let section = regSectionSelect.value;
             if (section === 'Custom') {
@@ -258,6 +298,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // ── Update Operation: Edit Teacher Details & Class Scope ──────────────────
 window.editTeacher = function(key, fName, lName, email, school, grade, section, dept) {
+    const schoolOpts = (window.availableSchoolsCache || ['Central Elementary School'])
+        .map(s => `<option value="${s}" ${s.toLowerCase() === (school||'').toLowerCase() ? 'selected' : ''}>${s}</option>`)
+        .join('');
+    const sectionOpts = (window.availableSectionsCache || ['Apitong', 'Acacia', 'Mahogany', 'Mabini', 'Rizal'])
+        .map(s => `<option value="${s}" ${s.toLowerCase() === (section||'').toLowerCase() ? 'selected' : ''}>Section ${s}</option>`)
+        .join('');
+
     Swal.fire({
         title: 'Edit Teacher Details & School',
         html: `
@@ -278,7 +325,9 @@ window.editTeacher = function(key, fName, lName, email, school, grade, section, 
                 </div>
                 <div class="mb-2">
                     <label class="form-label text-muted small fw-bold mb-1">Assigned School</label>
-                    <input id="edit-school" class="swal2-input m-0 w-100" value="${school || 'Central Elementary School'}">
+                    <select id="edit-school" class="swal2-select m-0 w-100" style="height: 48px; border-radius: 8px;">
+                        ${schoolOpts}
+                    </select>
                 </div>
                 <div class="row g-2 mb-0">
                     <div class="col-6">
@@ -287,7 +336,9 @@ window.editTeacher = function(key, fName, lName, email, school, grade, section, 
                     </div>
                     <div class="col-6">
                         <label class="form-label text-muted small fw-bold mb-1">Assigned Section</label>
-                        <input id="edit-section" class="swal2-input m-0 w-100" value="${section || 'Apitong'}">
+                        <select id="edit-section" class="swal2-select m-0 w-100" style="height: 48px; border-radius: 8px;">
+                            ${sectionOpts}
+                        </select>
                     </div>
                 </div>
             </div>

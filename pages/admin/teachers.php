@@ -105,9 +105,13 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-bold mb-1"><i class="fa-solid fa-school text-primary me-1"></i> Assigned School <span class="text-danger">*</span></label>
-                            <input type="text" id="teacherRegSchool" class="form-control" placeholder="e.g. Davao Central Elementary School" value="Central Elementary School" required style="border-radius: 10px;">
-                            <small class="text-muted" style="font-size: 0.72rem;">DepEd District / Elementary School Campus</small>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label text-muted small fw-bold mb-0"><i class="fa-solid fa-school text-primary me-1"></i> Assigned School <span class="text-danger">*</span></label>
+                                <a href="schools" class="small text-primary text-decoration-none fw-semibold" style="font-size: 0.75rem;">+ Manage Schools</a>
+                            </div>
+                            <select id="teacherRegSchoolSelect" class="form-select" style="border-radius: 10px;" required>
+                                <option value="Central Elementary School" selected>Central Elementary School</option>
+                            </select>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -120,7 +124,10 @@
                                 </select>
                             </div>
                             <div class="col-md-7">
-                                <label class="form-label text-muted small fw-bold mb-1">Assigned Section <span class="text-danger">*</span></label>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label text-muted small fw-bold mb-0">Assigned Section <span class="text-danger">*</span></label>
+                                    <a href="schools" class="small text-primary text-decoration-none fw-semibold" style="font-size: 0.75rem;">+ Manage Sections</a>
+                                </div>
                                 <select id="teacherRegSectionSelect" class="form-select" style="border-radius: 10px;" required>
                                     <option value="" disabled selected>Select Section...</option>
                                     <option value="Apitong">Apitong</option>
