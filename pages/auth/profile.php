@@ -211,6 +211,7 @@
             const newPass = document.getElementById('newPassword').value;
             const confirmPass = document.getElementById('confirmPassword').value;
             const saveBtn = document.getElementById('saveProfileBtn');
+            let verificationSent = false;
 
             if (!fName) {
                 Swal.fire('First Name Required', 'Please provide a first name.', 'warning');
@@ -255,7 +256,6 @@
                     await user.reauthenticateWithCredential(credential);
 
                     // 2. Update Firebase Auth Email
-                    let verificationSent = false;
                     if (emailChanged) {
                         try {
                             await user.updateEmail(email);
