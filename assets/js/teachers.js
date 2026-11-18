@@ -396,52 +396,62 @@ window.resetTeacherPassword = function(key, email, name) {
         confirmButtonText: '<i class="fa-solid fa-key me-1"></i> Reset to teacher123'
     }).then(async (result) => {
         if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Resetting Password...',
+                html: '<i class="fa-solid fa-circle-notch fa-spin fa-2x text-primary mb-3"></i><br>Updating credentials in Firebase Authentication...',
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+
             try {
-                // Initialize secondary app to create auth account if missing
-                let secApp;
-                try {
-                    secApp = firebase.initializeApp(firebaseConfig, "PasswordResetWorker_" + Date.now());
-                } catch(e) {
-                    secApp = firebase.app();
+                // Call server-side Admin API to force-update Firebase Auth password
+                const res = await fetch('../../backend/api/admin_reset_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: 'teacher123' })
+                });
+
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to update Firebase Authentication.');
                 }
 
-                try {
-                    // If legacy account never had Firebase Auth, create it now with teacher123
-                    const cred = await secApp.auth().createUserWithEmailAndPassword(email, 'teacher123');
-                    if (cred && cred.user) {
-                        const newUid = cred.user.uid;
+                // If UID changed or returned, make sure RTDB record is synced
+                if (data.details && data.details.uid) {
+                    const newUid = data.details.uid;
+                    if (key !== newUid) {
                         const snap = await db.ref('users/' + key).once('value');
-                        const data = snap.val() || {};
-                        data.uid = newUid;
-                        data.defaultPassword = 'teacher123';
-                        data.passwordResetAt = Date.now();
-                        await db.ref('users/' + newUid).set(data);
-                        if (key !== newUid) {
-                            await db.ref('users/' + key).remove();
-                        }
+                        const rtdbData = snap.val() || {};
+                        rtdbData.uid = newUid;
+                        rtdbData.defaultPassword = 'teacher123';
+                        rtdbData.passwordResetAt = Date.now();
+                        await db.ref('users/' + newUid).set(rtdbData);
+                        await db.ref('users/' + key).remove();
+                    } else {
+                        await db.ref('users/' + key).update({
+                            defaultPassword: 'teacher123',
+                            passwordResetAt: Date.now()
+                        });
                     }
-                } catch (authErr) {
-                    // If already exists in Auth, just record defaultPassword in DB
+                } else {
                     await db.ref('users/' + key).update({
                         defaultPassword: 'teacher123',
                         passwordResetAt: Date.now()
                     });
                 }
 
-                try { await secApp.delete(); } catch(e) {}
-
                 Swal.fire({
                     icon: 'success',
                     title: 'Password Set to teacher123!',
                     html: `
-                        <p class="mb-2">The default password for <strong>${name}</strong> is:</p>
+                        <p class="mb-2">The password for <strong>${name}</strong> (${email}) has been set to:</p>
                         <div class="p-2 bg-light border rounded fw-bold text-primary fs-5 font-monospace mb-2">teacher123</div>
-                        <small class="text-muted">You can now give this password to the teacher privately.</small>
+                        <small class="text-success"><i class="fa-solid fa-circle-check me-1"></i> Successfully updated in Google Firebase Authentication!</small>
                     `,
                     confirmButtonColor: '#4f46e5'
                 });
             } catch (err) {
-                Swal.fire('Error', err.message, 'error');
+                Swal.fire('Reset Failed', err.message, 'error');
             }
         }
     });

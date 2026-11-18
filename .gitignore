@@ -6,6 +6,8 @@ Thumbs.db
 
 # API Secrets
 secrets.php
+*adminsdk*.json
+backend/config/serviceAccountKey.json
 
 # Ignore temporary JSON exports
 json/*.json
