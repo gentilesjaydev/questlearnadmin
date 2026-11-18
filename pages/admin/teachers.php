@@ -33,14 +33,15 @@
                                 <tr>
                                     <th class="px-4 py-3 text-muted text-nowrap">Teacher Name</th>
                                     <th class="px-4 py-3 text-muted text-nowrap">Email Address</th>
-                                    <th class="px-4 py-3 text-muted text-nowrap">Assigned Class / Section</th>
+                                    <th class="px-4 py-3 text-muted text-nowrap">Assigned School</th>
+                                    <th class="px-4 py-3 text-muted text-nowrap">Grade & Section</th>
                                     <th class="px-4 py-3 text-muted text-nowrap">Account Status</th>
                                     <th class="px-4 py-3 text-muted text-end text-nowrap">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="teachersTableBody">
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
+                                    <td colspan="6" class="text-center py-5 text-muted">
                                         <i class="fa-solid fa-circle-notch fa-spin fa-2x mb-3 text-primary"></i>
                                         <p class="mb-0">Loading teacher accounts...</p>
                                     </td>
@@ -100,6 +101,12 @@
                                     <i class="fa-solid fa-eye" id="toggleTeacherRegPasswordIcon"></i>
                                 </button>
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold mb-1"><i class="fa-solid fa-school text-primary me-1"></i> Assigned School <span class="text-danger">*</span></label>
+                            <input type="text" id="teacherRegSchool" class="form-control" placeholder="e.g. Davao Central Elementary School" value="Central Elementary School" required style="border-radius: 10px;">
+                            <small class="text-muted" style="font-size: 0.72rem;">DepEd District / Elementary School Campus</small>
                         </div>
 
                         <div class="row g-3 mb-3">

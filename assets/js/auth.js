@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             sessionStorage.setItem('userUid', user.uid);
                             sessionStorage.setItem('teacherGrade', userData.grade || '');
                             sessionStorage.setItem('teacherSection', userData.section || '');
+                            sessionStorage.setItem('teacherSchool', userData.school || '');
                             sessionStorage.setItem('teacherDept', userData.department || '');
                             
                             // Smart Routing based on Role

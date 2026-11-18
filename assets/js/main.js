@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const userName = sessionStorage.getItem('userName') || 'User';
             const teacherGrade = sessionStorage.getItem('teacherGrade');
             const teacherSection = sessionStorage.getItem('teacherSection');
+            const teacherSchool = sessionStorage.getItem('teacherSchool');
 
             // 1. Update Navbar Profile
             const navAvatar = document.getElementById('navUserAvatar');
@@ -67,9 +68,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             if (navRole) {
                 if (userRole === 'admin') {
-                    navRole.innerHTML = '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5"><i class="fa-solid fa-shield-halved me-1"></i> Admin (All Classes)</span>';
+                    navRole.innerHTML = '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5"><i class="fa-solid fa-shield-halved me-1"></i> Admin (All Schools & Classes)</span>';
                 } else if (teacherSection) {
-                    navRole.innerHTML = `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-0.5"><i class="fa-solid fa-chalkboard-user me-1"></i> ${teacherGrade || 'Grade 6'} — ${teacherSection}</span>`;
+                    const schoolLabel = teacherSchool ? `<span class="opacity-75">${teacherSchool} • </span>` : '';
+                    navRole.innerHTML = `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-0.5"><i class="fa-solid fa-chalkboard-user me-1"></i> ${schoolLabel}${teacherGrade || 'Grade 6'} — ${teacherSection}</span>`;
                 } else {
                     navRole.innerHTML = '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-0.5">Teacher</span>';
                 }
@@ -107,6 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     sessionStorage.setItem('userName', full);
                                     sessionStorage.setItem('teacherGrade', u.grade || '');
                                     sessionStorage.setItem('teacherSection', u.section || '');
+                                    sessionStorage.setItem('teacherSchool', u.school || '');
                                     sessionStorage.setItem('teacherDept', u.department || '');
                                     applyUserUI();
                                 }

@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 const lastName = teacher.lastName || '';
                                 const name = (firstName + ' ' + lastName).trim() || teacher.displayName || teacher.name || 'Unnamed Teacher';
                                 const email = teacher.email || 'No email';
+                                const school = teacher.school || 'Central Elementary School';
                                 const grade = teacher.grade || 'Grade 6';
                                 const section = teacher.section || 'Unassigned';
                                 const dept = teacher.department || 'English';
@@ -83,6 +84,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                         <i class="fa-regular fa-envelope me-1 text-secondary"></i> ${email}
                                     </td>
                                     <td class="px-4 py-3">
+                                        <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 fw-semibold">
+                                            <i class="fa-solid fa-school text-primary me-1.5"></i> ${school}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3">
                                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1.5 fw-semibold">
                                             <i class="fa-solid fa-chalkboard-user me-1.5"></i> ${grade} — ${section}
                                         </span>
@@ -94,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     </td>
                                     <td class="px-4 py-3 text-end text-nowrap">
                                         <button class="btn btn-sm btn-light border me-1 rounded-3 shadow-sm text-primary" 
-                                            onclick="editTeacher('${key}', '${firstName.replace(/'/g, "\\'")}', '${lastName.replace(/'/g, "\\'")}', '${email}', '${grade.replace(/'/g, "\\'")}', '${section.replace(/'/g, "\\'")}', '${dept.replace(/'/g, "\\'")}')" 
+                                            onclick="editTeacher('${key}', '${firstName.replace(/'/g, "\\'")}', '${lastName.replace(/'/g, "\\'")}', '${email}', '${school.replace(/'/g, "\\'")}', '${grade.replace(/'/g, "\\'")}', '${section.replace(/'/g, "\\'")}', '${dept.replace(/'/g, "\\'")}')" 
                                             title="Edit Class Assignment">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
@@ -144,6 +150,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const lName = document.getElementById('teacherRegLastName').value.trim();
             const email = document.getElementById('teacherRegEmail').value.trim();
             const password = regPasswordInput.value;
+            const school = (document.getElementById('teacherRegSchool') ? document.getElementById('teacherRegSchool').value.trim() : '') || 'Central Elementary School';
             const grade = document.getElementById('teacherRegGradeSelect').value;
             let section = regSectionSelect.value;
             if (section === 'Custom') {
@@ -151,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             const dept = document.getElementById('teacherRegDept').value.trim() || 'English';
 
-            if (!fName || !lName || !email || !password || !section) {
+            if (!fName || !lName || !email || !password || !school || !section) {
                 if (errorAlert && errorMsg) {
                     errorMsg.innerText = 'Please complete all required fields.';
                     errorAlert.classList.remove('d-none');
@@ -192,6 +199,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     lastName: lName,
                     email: email,
                     role: 'teacher',
+                    school: school,
                     grade: grade,
                     section: section,
                     department: dept,
@@ -217,6 +225,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <p class="mb-2"><strong>${fName} ${lName}</strong> has been registered successfully.</p>
                         <div class="p-3 bg-light rounded text-start small border">
                             <div><strong>Email:</strong> ${email}</div>
+                            <div><strong>School:</strong> ${school}</div>
                             <div><strong>Assigned Scope:</strong> ${grade} — ${section}</div>
                             <div><strong>Department:</strong> ${dept}</div>
                         </div>
@@ -249,9 +258,9 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ── Update Operation: Edit Teacher Details & Class Scope ──────────────────
-window.editTeacher = function(key, fName, lName, email, grade, section, dept) {
+window.editTeacher = function(key, fName, lName, email, school, grade, section, dept) {
     Swal.fire({
-        title: 'Edit Teacher Details & Class',
+        title: 'Edit Teacher Details & School',
         html: `
             <div class="text-start">
                 <div class="row g-2 mb-2">
@@ -267,6 +276,10 @@ window.editTeacher = function(key, fName, lName, email, grade, section, dept) {
                 <div class="mb-2">
                     <label class="form-label text-muted small fw-bold mb-1">Email</label>
                     <input id="edit-email" type="email" class="swal2-input m-0 w-100" value="${email}">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label text-muted small fw-bold mb-1">Assigned School</label>
+                    <input id="edit-school" class="swal2-input m-0 w-100" value="${school || 'Central Elementary School'}">
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6">
@@ -292,6 +305,7 @@ window.editTeacher = function(key, fName, lName, email, grade, section, dept) {
                 firstName: document.getElementById('edit-fname').value.trim(),
                 lastName: document.getElementById('edit-lname').value.trim(),
                 email: document.getElementById('edit-email').value.trim(),
+                school: document.getElementById('edit-school').value.trim(),
                 grade: document.getElementById('edit-grade').value.trim(),
                 section: document.getElementById('edit-section').value.trim(),
                 department: document.getElementById('edit-dept').value.trim()
@@ -304,7 +318,7 @@ window.editTeacher = function(key, fName, lName, email, grade, section, dept) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Teacher Updated!',
-                        text: 'Teacher details and class section assignment have been saved.',
+                        text: 'Teacher details, school, and class section assignment have been saved.',
                         timer: 1800,
                         showConfirmButton: false
                     });
