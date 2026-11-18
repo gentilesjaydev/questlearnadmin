@@ -255,9 +255,23 @@
                     await user.reauthenticateWithCredential(credential);
 
                     // 2. Update Firebase Auth Email
+                    let verificationSent = false;
                     if (emailChanged) {
-                        await user.updateEmail(email);
-                        originalEmail = email;
+                        try {
+                            await user.updateEmail(email);
+                            originalEmail = email;
+                        } catch (emailErr) {
+                            if (emailErr.code === 'auth/operation-not-allowed' || (emailErr.message && emailErr.message.toLowerCase().includes('verify'))) {
+                                if (typeof user.verifyBeforeUpdateEmail === 'function') {
+                                    await user.verifyBeforeUpdateEmail(email);
+                                    verificationSent = true;
+                                } else {
+                                    throw emailErr;
+                                }
+                            } else {
+                                throw emailErr;
+                            }
+                        }
                     }
 
                     // 3. Update Firebase Auth Password
@@ -302,15 +316,25 @@
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmPassword').value = '';
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Profile Saved!',
-                    html: emailChanged 
-                        ? `Your details and login email have been updated to <b>${email}</b>.<br><small class="text-muted">Use this email for your next login.</small>`
-                        : 'Your name and profile information have been updated successfully.',
-                    confirmButtonColor: '#4f46e5',
-                    confirmButtonText: 'Done'
-                });
+                if (verificationSent) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Verification Link Sent',
+                        html: `Firebase has sent a confirmation link to <b>${email}</b>.<br><br>Please open your email and click the confirmation link to complete the change.<br><br><small class="text-muted">To allow instant email changes without sending verification emails, disable <i>"Verify new email before changing"</i> in Firebase Console → Authentication → Settings.</small>`,
+                        confirmButtonColor: '#4f46e5',
+                        confirmButtonText: 'Understood'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profile Saved!',
+                        html: emailChanged 
+                            ? `Your details and login email have been updated to <b>${email}</b>.<br><small class="text-muted">Use this email for your next login.</small>`
+                            : 'Your name and profile information have been updated successfully.',
+                        confirmButtonColor: '#4f46e5',
+                        confirmButtonText: 'Done'
+                    });
+                }
             } catch (err) {
                 console.error("Save profile error:", err);
                 let errorMsg = err.message;
