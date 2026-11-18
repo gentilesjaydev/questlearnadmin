@@ -86,14 +86,16 @@ document.addEventListener("DOMContentLoaded", function() {
                             // Smart Routing based on Role
                             if(role === 'admin' || role === 'teacher') {
                                 if(typeof Swal !== 'undefined') {
+                                    const isAdmin = role === 'admin';
                                     Swal.fire({
                                         icon: 'success',
-                                        title: 'Login Successful',
-                                        text: `Welcome back, ${displayName}!`,
+                                        title: isAdmin ? 'Welcome back, Admin! 👑' : 'Welcome back, Teacher! 🎓',
+                                        text: `Good to see you, ${displayName}!`,
                                         showConfirmButton: false,
-                                        timer: 1500
+                                        timer: 1800,
+                                        timerProgressBar: true
                                     }).then(() => {
-                                        window.location.href = role === 'admin' ? '../../pages/admin/dashboard' : '../../index';
+                                        window.location.href = isAdmin ? '../../pages/admin/dashboard' : '../../index';
                                     });
                                 } else {
                                     window.location.href = role === 'admin' ? '../../pages/admin/dashboard' : '../../index';
