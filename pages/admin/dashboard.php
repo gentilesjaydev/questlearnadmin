@@ -112,9 +112,9 @@
                                     View All <i class="fa-solid fa-arrow-right ms-1"></i>
                                 </a>
                             </div>
-                            <div class="table-responsive">
+                            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
                                 <table class="table table-hover mb-0 align-middle">
-                                    <thead class="bg-light">
+                                    <thead class="bg-light sticky-top shadow-sm" style="z-index: 1;">
                                         <tr>
                                             <th class="px-4 py-3 text-muted text-nowrap">Teacher</th>
                                             <th class="px-4 py-3 text-muted text-nowrap">Assigned Campus</th>
@@ -147,9 +147,9 @@
                                     Manage <i class="fa-solid fa-arrow-right ms-1"></i>
                                 </a>
                             </div>
-                            <div class="table-responsive">
+                            <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
                                 <table class="table table-hover mb-0 align-middle">
-                                    <thead class="bg-light">
+                                    <thead class="bg-light sticky-top shadow-sm" style="z-index: 1;">
                                         <tr>
                                             <th class="px-4 py-3 text-muted text-nowrap">School Campus</th>
                                             <th class="px-4 py-3 text-muted text-nowrap">Division</th>

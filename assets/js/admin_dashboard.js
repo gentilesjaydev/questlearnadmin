@@ -121,8 +121,8 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // Show up to 6 teachers in the summary roster
-        teachers.slice(0, 6).forEach(t => {
+        // Render all teachers in the scrollable roster
+        teachers.forEach(t => {
             const fName = t.firstName || '';
             const lName = t.lastName || '';
             const name = (fName + ' ' + lName).trim() || 'Unnamed Teacher';
@@ -223,3 +223,4 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
