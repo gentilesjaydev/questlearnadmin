@@ -37,11 +37,19 @@ document.addEventListener("DOMContentLoaded", function() {
                     db.ref('users/' + user.uid).once('value').then((snapshot) => {
                         if(snapshot.exists()) {
                             const userData = snapshot.val();
-                            const role = userData.role; // Expected: 'admin' or 'teacher'
+                            const role = userData.role || 'teacher'; // Expected: 'admin' or 'teacher'
+                            const fName = userData.firstName || '';
+                            const lName = userData.lastName || '';
+                            const displayName = (fName + ' ' + lName).trim() || userData.displayName || userData.name || user.email;
                             
-                            // Save role securely for routing
+                            // Save role & scoped class credentials for session
                             sessionStorage.setItem('userRole', role);
-                            sessionStorage.setItem('userName', userData.name || user.email);
+                            sessionStorage.setItem('userName', displayName);
+                            sessionStorage.setItem('userEmail', user.email);
+                            sessionStorage.setItem('userUid', user.uid);
+                            sessionStorage.setItem('teacherGrade', userData.grade || '');
+                            sessionStorage.setItem('teacherSection', userData.section || '');
+                            sessionStorage.setItem('teacherDept', userData.department || '');
                             
                             // Smart Routing based on Role
                             if(role === 'admin' || role === 'teacher') {
@@ -49,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Login Successful',
-                                        text: 'Welcome back to QuestLearn!',
+                                        text: `Welcome back, ${displayName}!`,
                                         showConfirmButton: false,
                                         timer: 1500
                                     }).then(() => {

@@ -46,10 +46,10 @@
             <!-- User Profile Dropdown -->
             <div class="dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center px-2 py-1 rounded-3 hover-bg-light transition-base text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=A594F9&color=fff&bold=true" alt="User" class="rounded-circle me-2 shadow-sm" width="36" height="36">
+                    <img id="navUserAvatar" src="https://ui-avatars.com/api/?name=User&background=A594F9&color=fff&bold=true" alt="User" class="rounded-circle me-2 shadow-sm" width="36" height="36">
                     <div class="d-none d-md-block text-start lh-sm">
-                        <div class="fw-semibold fs-6 text-dark">Admin User</div>
-                        <div class="small text-muted fw-medium">System Access</div>
+                        <div class="fw-semibold fs-6 text-dark" id="navUserName">Admin User</div>
+                        <div class="small text-muted fw-medium" id="navUserRole">System Access</div>
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-2 rounded-4 p-2">

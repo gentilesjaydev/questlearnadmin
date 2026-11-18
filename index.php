@@ -32,11 +32,16 @@
                 <!-- Page Header -->
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 pb-3 border-bottom border-light gap-3">
                     <div>
-                        <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold mb-3 border border-primary border-opacity-25">
-                            <i class="fa-solid fa-bolt me-1"></i> Live Metrics
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                            <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold border border-primary border-opacity-25">
+                                <i class="fa-solid fa-bolt me-1"></i> Live Metrics
+                            </div>
+                            <span id="dashboardScopeBadge" class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill fw-bold border border-secondary border-opacity-25 d-none">
+                                <i class="fa-solid fa-chalkboard-user me-1"></i> Loading Scope...
+                            </span>
                         </div>
                         <h2 class="mb-2">Dashboard Overview</h2>
-                        <p class="text-muted mb-0">Monitor student performance and game engagement in real-time.</p>
+                        <p class="text-muted mb-0" id="dashboardSubtitle">Monitor student performance and game engagement in real-time.</p>
                     </div>
                     <button onclick="generateReport()" class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 shadow-sm">
                         <i class="fa-solid fa-cloud-arrow-down"></i> Download Report

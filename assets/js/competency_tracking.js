@@ -66,9 +66,18 @@ document.addEventListener("DOMContentLoaded", function() {
             allStudents = [];
             const data = snapshot.val() || {};
 
+            const currentRole = sessionStorage.getItem('userRole') || 'teacher';
+            const teacherSection = sessionStorage.getItem('teacherSection');
+            const isTeacherScoped = (currentRole === 'teacher' && teacherSection && teacherSection !== 'All');
+
             Object.keys(data).forEach(uid => {
                 const u = data[uid];
                 if (!u || (u.role && u.role !== 'student')) return;
+
+                // Scoping: if teacher, skip students not in this teacher's section
+                if (isTeacherScoped && u.section && u.section.toLowerCase() !== teacherSection.toLowerCase()) {
+                    return;
+                }
 
                 const firstName = u.firstName || '';
                 const lastName = u.lastName || '';

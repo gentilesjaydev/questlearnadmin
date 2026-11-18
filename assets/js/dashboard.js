@@ -12,6 +12,28 @@ function initDashboard() {
     // 1. Fetch Students
     db.ref('users').once('value').then((snapshot) => {
         if (snapshot.exists()) {
+            const currentRole = sessionStorage.getItem('userRole') || 'teacher';
+            const teacherSection = sessionStorage.getItem('teacherSection');
+            const teacherGrade = sessionStorage.getItem('teacherGrade') || 'Grade 6';
+            const isTeacherScoped = (currentRole === 'teacher' && teacherSection && teacherSection !== 'All');
+
+            // Update UI Scope Badge
+            const scopeBadge = document.getElementById('dashboardScopeBadge');
+            const dashboardSubtitle = document.getElementById('dashboardSubtitle');
+            if (scopeBadge) {
+                if (isTeacherScoped) {
+                    scopeBadge.innerHTML = `<i class="fa-solid fa-chalkboard-user me-1"></i> Class: ${teacherGrade} — Section ${teacherSection}`;
+                    scopeBadge.className = "badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold border border-primary border-opacity-25";
+                    scopeBadge.classList.remove('d-none');
+                    if (dashboardSubtitle) dashboardSubtitle.textContent = `Real-time student performance and engagement telemetry for Section ${teacherSection}.`;
+                } else {
+                    scopeBadge.innerHTML = `<i class="fa-solid fa-shield-halved me-1"></i> School-Wide (All Classes)`;
+                    scopeBadge.className = "badge bg-dark bg-opacity-10 text-dark px-3 py-2 rounded-pill fw-bold border border-dark border-opacity-25";
+                    scopeBadge.classList.remove('d-none');
+                    if (dashboardSubtitle) dashboardSubtitle.textContent = "Monitor student performance and game engagement across all Grade 6 cohorts.";
+                }
+            }
+
             let studentCount = 0;
             let totalXp = 0;
             let atRiskCount = 0;
@@ -26,6 +48,11 @@ function initDashboard() {
             snapshot.forEach((child) => {
                 const student = child.val();
                 if (student.role === 'student' || !student.role) {
+                    // Class Scoping: Filter out students from other sections if logged in as a Section Teacher
+                    if (isTeacherScoped && student.section && student.section.toLowerCase() !== teacherSection.toLowerCase()) {
+                        return;
+                    }
+
                     studentCount++;
                     const xp = parseInt(student.xp) || 0;
                     const hp = parseInt(student.hp) || 0;

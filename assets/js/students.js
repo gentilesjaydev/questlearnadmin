@@ -397,6 +397,11 @@ document.addEventListener("DOMContentLoaded", function() {
             customOpt.value = 'Custom';
             customOpt.textContent = '+ Type custom section';
             regSectionSelect.appendChild(customOpt);
+
+            const teacherSec = sessionStorage.getItem('teacherSection');
+            if (teacherSec && teacherSec !== 'All') {
+                regSectionSelect.value = teacherSec;
+            }
         }
     });
 
@@ -630,11 +635,20 @@ document.addEventListener("DOMContentLoaded", function() {
                     allUsersData = data || {};
                     allStudentsList = [];
                     
+                    const currentRole = sessionStorage.getItem('userRole') || 'teacher';
+                    const teacherSection = sessionStorage.getItem('teacherSection');
+                    const isTeacherScoped = (currentRole === 'teacher' && teacherSection && teacherSection !== 'All');
+
                     if (data) {
                         Object.keys(data).forEach(key => {
                             const student = data[key];
                             
                             if(student.role === 'student' || !student.role) {
+                                // Scoping: if teacher, skip students not in this teacher's section
+                                if (isTeacherScoped && student.section && student.section.toLowerCase() !== teacherSection.toLowerCase()) {
+                                    return;
+                                }
+
                                 const firstName = student.firstName || '';
                                 const lastName = student.lastName || '';
                                 const name = (firstName + ' ' + lastName).trim() || 'Anonymous Student';

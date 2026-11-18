@@ -46,17 +46,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <a href="<?php echo $base; ?>pages/teacher/modules"><i class="fa-solid fa-folder-open"></i> Modules Library</a>
         </li>
         
-        <hr class="mx-3 my-2.5" style="border-color: rgba(255,255,255,0.25); opacity: 1;">
-        <li class="px-3 pt-1 pb-1 text-uppercase" style="font-size: 0.68rem; color: rgba(255, 255, 255, 0.65); font-weight: 800; letter-spacing: 1.2px;">Administration</li>
-        
-        <li class="<?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>">
-            <a href="<?php echo $base; ?>pages/admin/dashboard"><i class="fa-solid fa-shield-halved"></i> Super Admin Hub</a>
-        </li>
-        <li class="<?php echo ($current_page == 'teachers.php') ? 'active' : ''; ?>">
-            <a href="<?php echo $base; ?>pages/admin/teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
-        </li>
-        <li class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">
-            <a href="<?php echo $base; ?>pages/admin/settings"><i class="fa-solid fa-gear"></i> System Settings</a>
-        </li>
+        <!-- Administration Navigation (Auto-hidden for Teachers) -->
+        <div id="adminNavGroup" class="admin-only-nav">
+            <hr class="mx-3 my-2.5" style="border-color: rgba(255,255,255,0.25); opacity: 1;">
+            <li class="px-3 pt-1 pb-1 text-uppercase" style="font-size: 0.68rem; color: rgba(255, 255, 255, 0.65); font-weight: 800; letter-spacing: 1.2px;">Administration</li>
+            
+            <li class="<?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $base; ?>pages/admin/dashboard"><i class="fa-solid fa-shield-halved"></i> Super Admin Hub</a>
+            </li>
+            <li class="<?php echo ($current_page == 'teachers.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $base; ?>pages/admin/teachers"><i class="fa-solid fa-chalkboard-user"></i> Manage Teachers</a>
+            </li>
+            <li class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $base; ?>pages/admin/settings"><i class="fa-solid fa-gear"></i> System Settings</a>
+            </li>
+        </div>
     </ul>
 </nav>

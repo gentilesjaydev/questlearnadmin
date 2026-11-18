@@ -46,6 +46,79 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+
+    // ── Global Session & Role Resolver (RBAC Scoping) ─────────────────────────
+    (function resolveUserRoleAndScope() {
+        function applyUserUI() {
+            const userRole = sessionStorage.getItem('userRole') || 'teacher';
+            const userName = sessionStorage.getItem('userName') || 'User';
+            const teacherGrade = sessionStorage.getItem('teacherGrade');
+            const teacherSection = sessionStorage.getItem('teacherSection');
+
+            // 1. Update Navbar Profile
+            const navAvatar = document.getElementById('navUserAvatar');
+            const navName = document.getElementById('navUserName');
+            const navRole = document.getElementById('navUserRole');
+
+            if (navName) navName.textContent = userName;
+            if (navAvatar) {
+                const bg = userRole === 'admin' ? 'A594F9' : '4f46e5';
+                navAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=${bg}&color=fff&bold=true`;
+            }
+            if (navRole) {
+                if (userRole === 'admin') {
+                    navRole.innerHTML = '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-0.5"><i class="fa-solid fa-shield-halved me-1"></i> Admin (All Classes)</span>';
+                } else if (teacherSection) {
+                    navRole.innerHTML = `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-0.5"><i class="fa-solid fa-chalkboard-user me-1"></i> ${teacherGrade || 'Grade 6'} — ${teacherSection}</span>`;
+                } else {
+                    navRole.innerHTML = '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-0.5">Teacher</span>';
+                }
+            }
+
+            // 2. Dynamic Sidebar Menu Scoping
+            const adminNavGroup = document.getElementById('adminNavGroup');
+            if (adminNavGroup) {
+                if (userRole === 'teacher') {
+                    adminNavGroup.classList.add('d-none');
+                } else {
+                    adminNavGroup.classList.remove('d-none');
+                }
+            }
+        }
+
+        applyUserUI();
+
+        // Also verify with Firebase Auth in case of fresh session or direct link navigation
+        try {
+            const authObj = (typeof auth !== 'undefined') ? auth : (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+            if (authObj && authObj.onAuthStateChanged) {
+                authObj.onAuthStateChanged(user => {
+                    if (user) {
+                        const dbObj = (typeof db !== 'undefined') ? db : (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+                        if (dbObj) {
+                            dbObj.ref('users/' + user.uid).once('value').then(snap => {
+                                if (snap.exists()) {
+                                    const u = snap.val();
+                                    const r = u.role || 'teacher';
+                                    const fn = u.firstName || '';
+                                    const ln = u.lastName || '';
+                                    const full = (fn + ' ' + ln).trim() || u.displayName || u.name || user.email;
+                                    sessionStorage.setItem('userRole', r);
+                                    sessionStorage.setItem('userName', full);
+                                    sessionStorage.setItem('teacherGrade', u.grade || '');
+                                    sessionStorage.setItem('teacherSection', u.section || '');
+                                    sessionStorage.setItem('teacherDept', u.department || '');
+                                    applyUserUI();
+                                }
+                            }).catch(e => console.debug(e));
+                        }
+                    }
+                });
+            }
+        } catch(err) {
+            console.debug(err);
+        }
+    })();
     
     // Global Logout Handler
     window.handleLogout = function(e) {

@@ -231,11 +231,20 @@ document.addEventListener("DOMContentLoaded", function() {
                     let chartData = [];
                     let chartColors = [];
 
+                    const currentRole = sessionStorage.getItem('userRole') || 'teacher';
+                    const teacherSection = sessionStorage.getItem('teacherSection');
+                    const isTeacherScoped = (currentRole === 'teacher' && teacherSection && teacherSection !== 'All');
+
                     if (data) {
                         Object.keys(data).forEach(key => {
                             const student = data[key];
                             
                             if(student.role === 'student' || !student.role) {
+                                // Scoping: if teacher, skip students not in this teacher's section
+                                if (isTeacherScoped && student.section && student.section.toLowerCase() !== teacherSection.toLowerCase()) {
+                                    return;
+                                }
+
                                 totalStudents++;
                                 const firstName = student.firstName || '';
                                 const lastName = student.lastName || '';
